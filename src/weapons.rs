@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{physics, zombie, dist_between, MouseLoc, player, angle_between};
+use crate::{physics, zombie, dist_between, MouseLoc, player, angle_between, AppState};
 
 pub const BLLT_SPEED: f32 = 500.0;
 pub const BLLT_RANDOM: f32 = 0.1;
@@ -10,13 +10,13 @@ pub const MAGAZINE_SIZE: u8 = 30;
 #[derive(Component)]
 pub struct Bullet;
 
-struct GunTimer(Timer);
-
 #[derive(Component)]
 pub struct Magazine(pub u8);
 
 #[derive(Component)]
 pub struct ReloadTimer(pub Timer);
+
+struct GunTimer(Timer);
 
 pub struct WeaponsPlugin;
 
@@ -26,8 +26,10 @@ impl Plugin for WeaponsPlugin
     {
         app
         .insert_resource(GunTimer(Timer::from_seconds(0.1, true)))
-        .add_system(shot_bullets)
-        .add_system(shoot);
+        .add_system_set(SystemSet::on_update(AppState::InGame)
+            .with_system(shot_bullets)
+            .with_system(shoot)
+        );
     }
 }
 
@@ -121,7 +123,8 @@ pub fn spawn_bullet(
         .insert(physics::Rigidbody{
             vx: (angle + rand_angle).cos()*BLLT_SPEED,
             vy: (angle + rand_angle).sin()*BLLT_SPEED,
-            friction: false
+            friction: false,
+            size: Vec2::new(5.0, 5.0)
         });
         
 }

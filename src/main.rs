@@ -7,8 +7,6 @@ mod weapons;
 mod construct;
 
 use bevy::{prelude::*, render::camera::RenderTarget}; 
-const MOVESPEED: f32 = 60.0;
-const PLAYER_ACC: f32 = 600.0;
 
 #[derive(Component)]
 struct MainCamera;
@@ -16,23 +14,32 @@ struct MainCamera;
 #[derive(Component)]
 struct TextScoreboard;
 
-#[derive(Component)]
-pub struct Pathfinder
-{
-    pub target: Vec3,
-    pub angry: bool
-}
-
 struct MouseLoc
 {
     x: f32,
     y: f32
 }
 
+pub struct GameAssets
+{
+    pub texture_atlas: Handle<TextureAtlas>
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+enum AppState {
+    MainMenu,
+    InGame,
+    Paused,
+}
+
 fn main() {
     App::new()
     .add_startup_system(setup)
     .add_plugins(DefaultPlugins)
+    .insert_resource(MouseLoc{x: 0.0, y: 0.0})
+    .insert_resource(construct::BlockSelection{block: construct::SelectionTypes::WallBlock})
+    .add_event::<physics::CollisionEvent>()
+    .add_state(AppState::InGame)
     .add_plugin(weapons::WeaponsPlugin)
     .add_plugin(player::PlayerPlugin)
     .add_plugin(zombie::ZombiePlugin)
@@ -40,20 +47,30 @@ fn main() {
     .add_plugin(wall::WallPlugin)
     .add_plugin(physics::PhysicsPlugin)
     .add_plugin(construct::ConstructionPlugin)
-    .add_system(my_cursor_system)
-    .add_system(keyboard_actions)
-    .insert_resource(MouseLoc{x: 0.0, y: 0.0})
-    .insert_resource(construct::BlockSelection{block: construct::SelectionTypes::WallBlock})
-    .add_event::<physics::CollisionEvent>()
+    .add_system_set(SystemSet::on_update(AppState::InGame) 
+        .with_system(my_cursor_system)
+        .with_system(keyboard_actions)
+    )
     .run();
 }
 
 fn setup(
-    mut commands: Commands
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>
 ) {
     commands.spawn_bundle(Camera2dBundle::default())
     .insert(MainCamera);
 
+    let texture_handle = asset_server.load("Sheet.png");
+    let texture_atlas = TextureAtlas::from_grid(texture_handle,
+    Vec2::new(20.0,20.0), 2, 2);
+
+    let texture_atlas_handle = (texture_atlases).add(texture_atlas);
+    
+    commands.insert_resource(GameAssets{
+        texture_atlas: texture_atlas_handle.clone()
+    });
 }
 
 fn keyboard_actions(
@@ -66,19 +83,19 @@ fn keyboard_actions(
     let mut rb = query_rb.single_mut();
 
     if input.pressed(KeyCode::D) {
-        rb.vx += PLAYER_ACC*time.delta_seconds();
+        rb.vx += player::PLAYER_ACC*time.delta_seconds();
     }
 
     if input.pressed(KeyCode::A) {
-        rb.vx += -PLAYER_ACC*time.delta_seconds();
+        rb.vx += -player::PLAYER_ACC*time.delta_seconds();
     }
 
     if input.pressed(KeyCode::W) {
-        rb.vy += PLAYER_ACC*time.delta_seconds();
+        rb.vy += player::PLAYER_ACC*time.delta_seconds();
     }
 
     if input.pressed(KeyCode::S) {
-        rb.vy += -PLAYER_ACC*time.delta_seconds();
+        rb.vy += -player::PLAYER_ACC*time.delta_seconds();
     }
 
     if input.pressed(KeyCode::Key1)
@@ -97,8 +114,8 @@ fn keyboard_actions(
         block.block = construct::SelectionTypes::TurretBlock;
     }
 
-    rb.vx = rb.vx.clamp(-MOVESPEED, MOVESPEED);
-    rb.vy = rb.vy.clamp(-MOVESPEED, MOVESPEED);
+    rb.vx = rb.vx.clamp(-player::MOVESPEED, player::MOVESPEED);
+    rb.vy = rb.vy.clamp(-player::MOVESPEED, player::MOVESPEED);
 
 }
 

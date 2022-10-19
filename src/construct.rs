@@ -1,7 +1,26 @@
 use bevy::prelude::*;
 
-use crate::MouseLoc;
+use crate::{MouseLoc, AppState, GameAssets};
+use crate::player::Player;
 use crate::{wall, turret};
+
+const MAX_CONSTRUCT_DIST: f32 = 50.0;
+
+pub struct ConstructionPlugin;
+
+pub struct BlockSelection
+{
+    pub block: SelectionTypes
+}
+
+impl Plugin for ConstructionPlugin
+{
+    fn build(&self, app: &mut App)
+    {
+        app.add_system_set(SystemSet::on_update(AppState::InGame)
+            .with_system(build));
+    }
+}
 
 #[derive(PartialEq, Eq)]
 pub enum SelectionTypes
@@ -10,28 +29,20 @@ pub enum SelectionTypes
     TurretBlock
 }
 
-pub struct BlockSelection
-{
-    pub block: SelectionTypes
-}
-
-pub struct ConstructionPlugin;
-
-impl Plugin for ConstructionPlugin
-{
-    fn build(&self, app: &mut App)
-    {
-        app.add_system(build);
-    }
-}
-
 fn build(
     mut commands: Commands,
+    game_assets: Res<GameAssets>,
+    query: Query<&Transform, With<Player>>,
     block: Res<BlockSelection>,
     btn: Res<Input<MouseButton>>,
     mouseloc: Res<MouseLoc>,
 ) {
-    if btn.just_pressed(MouseButton::Right) {
+
+    let player_vec = query.single().translation;
+    let mouse_vec: Vec3 = Vec3::new(mouseloc.x, mouseloc.y, 0.0);
+
+    if btn.just_pressed(MouseButton::Right) && player_vec.distance(mouse_vec) < MAX_CONSTRUCT_DIST {
+
         let x_remain = mouseloc.x%20.0;
         let y_remain = mouseloc.y%20.0;
 
@@ -53,25 +64,9 @@ fn build(
 
         if block.block == SelectionTypes::WallBlock
         {
-            wall::spawn_wall(&mut commands, spawn_pos)
+            wall::spawn_wall(&mut commands, spawn_pos, &game_assets);
         } else if block.block == SelectionTypes::TurretBlock {
-            commands
-                .spawn_bundle(SpriteBundle {
-                    sprite: Sprite{
-                        color: Color::rgb(0.0,0.0,1.0),
-                        custom_size: Some(Vec2::new(20.0,20.0)),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .insert_bundle(TransformBundle{
-                    local: Transform::from_xyz(x_pos, y_pos, 0.0),
-                    ..Default::default()
-                })
-                .insert(turret::Turret)
-                .insert(turret::TurretShootTimer(Timer::from_seconds(1.0, true)))
-                .insert(turret::TurretBulletTimer(Timer::from_seconds(0.2, true)))
-                .insert(turret::TurretCoolTimer(Timer::from_seconds(4.0, true)));
+            turret::spawn_turret(&mut commands, spawn_pos, &game_assets);
         }
     }
 }

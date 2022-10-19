@@ -1,5 +1,8 @@
 use bevy::{prelude::*, sprite::Anchor};
-use crate::{physics, weapons};
+use crate::{physics, weapons, zombie, GameAssets, AppState};
+
+pub const MOVESPEED: f32 = 60.0;
+pub const PLAYER_ACC: f32 = 600.0;
 
 #[derive(Component)]
 pub(crate) struct Player;
@@ -19,19 +22,32 @@ impl Plugin for PlayerPlugin
     fn build(&self, app: &mut App)
     {
         app
-        .add_startup_system(player_setup)
-        .add_system(player_health);
+        .add_system_set(SystemSet::on_enter(AppState::InGame)
+            .with_system(player_setup))
+        .add_system_set(SystemSet::on_update(AppState::InGame)
+            .with_system(player_health));
     }
 }
 
 fn player_setup(
-    mut commands: Commands
+    mut commands: Commands,
+    game_asset: Res<GameAssets>
 ) {
     commands
+        /*
         .spawn_bundle(SpriteBundle {
             sprite: Sprite{
                 color: Color::rgb(0.7,0.7,0.7),
                 custom_size: Some(Vec2::new(10.0,10.0)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        */
+        .spawn_bundle(SpriteSheetBundle {
+            texture_atlas: game_asset.texture_atlas.clone(),
+            sprite: TextureAtlasSprite {
+                index: 1,
                 ..Default::default()
             },
             ..Default::default()
@@ -43,10 +59,12 @@ fn player_setup(
         .insert(physics::Rigidbody {
             vx: 0.0,
             vy: 0.0,
-            friction: true
+            friction: true,
+            size: Vec2::new(10.0, 10.0)
         })
         .insert(weapons::ReloadTimer(Timer::from_seconds(2.0, true)))
         .insert(weapons::Magazine(weapons::MAGAZINE_SIZE))
+        .insert(zombie::Attackable(zombie::TargetPriority::High))
         .insert(EntityHealth{val: 100.0});
 
     // SPAWN HEALTBAR

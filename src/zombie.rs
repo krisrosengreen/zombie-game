@@ -1,7 +1,7 @@
-use bevy::prelude::*;
+use bevy::{prelude::*};
 use rand::prelude::*;
 
-use crate::{physics, Pathfinder, angle_between, player, dist_between};
+use crate::{physics::{self, Rigidbody}, angle_between, player::{self, EntityHealth}, dist_between, AppState, GameAssets};
 use std::f32::consts::PI;
 
 pub struct ZombiePlugin;
@@ -15,11 +15,35 @@ const START_DIST: f32 = 500.0;
 const ATTACK_TIME: f32 = 0.3;
 const INIT_TARGET_RAD: f32 = 30.0;
 
+const ENTITY_DIST_REPULSION: f32 = 20.0;
+const REPULSION_ACC: f32 = 200.0;
+
 #[derive(Component)]
 pub struct Zombie;
 
 #[derive(Component)]
+pub struct NewTargetTimer(pub Timer);
+
+#[derive(Component)]
+pub struct Attackable(pub TargetPriority);
+
+#[derive(Component)]
 struct ZombieAttackTimer(Timer);
+
+#[derive(Clone)]
+pub enum TargetPriority {
+    High = 3,
+    Medium = 2,
+    Low = 1
+}
+
+#[derive(Component)]
+pub struct Pathfinder
+{
+    pub target: Vec3,
+    pub target_entity: bool,
+    pub target_priority: TargetPriority
+}
 
 struct ZombieTimer(Timer);
 
@@ -29,11 +53,15 @@ impl Plugin for ZombiePlugin
     {
         app
         .insert_resource(ZombieTimer(Timer::from_seconds(2.0, true)))
-        .add_system(zombie_ai)
-        .add_system(zombie_spawner)
-        .add_system(attack_health_entities)
-        .add_system(enemy_pathfind)
-        .add_system(enemy_player_pathfind);
+        .add_system_set(SystemSet::on_update(AppState::InGame) 
+            .with_system(zombie_ai)
+            .with_system(zombie_spawner)
+            .with_system(attack_health_entities)
+            .with_system(enemy_pathfind)
+            .with_system(enemy_entity_pathfind)
+            .with_system(mutual_repulsion::<Zombie>)
+            .with_system(entity_health)
+            .with_system(random_new_target));
     }
 }
 
@@ -48,7 +76,7 @@ pub fn zombie_ai(
         if dist > 20.0 {
             rb.vx += ZOMBIE_ACC*angle.cos()*time.delta_seconds();
             rb.vy += ZOMBIE_ACC*angle.sin()*time.delta_seconds();
-            if pf.angry {
+            if pf.target_entity {
                 rb.vx = rb.vx.clamp(-ZOMB_ANGRY_SPEED, ZOMB_ANGRY_SPEED);
                 rb.vy = rb.vy.clamp(-ZOMB_ANGRY_SPEED, ZOMB_ANGRY_SPEED);
             } else {
@@ -63,38 +91,15 @@ fn zombie_spawner(
     mut commands: Commands,
     mut timer: ResMut<ZombieTimer>,
     time: Res<Time>,
+    game_assets: Res<GameAssets>
 ) {
     if timer.0.tick(time.delta()).just_finished() {
         let mut rng = rand::thread_rng();
         let angle: f32 = rng.gen::<f32>() * 2.0 * PI;
 
         let start_pos = Vec3::new(angle.cos() * START_DIST, angle.sin() * START_DIST, 0.0);
-        let start_transform = Transform::from_translation(start_pos);
 
-        commands
-            .spawn_bundle(SpriteBundle {
-                sprite: Sprite{
-                    color: Color::rgb(1.0,0.0,0.0),
-                    custom_size: Some(Vec2::new(10.0,10.0)),
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
-            .insert_bundle(TransformBundle{
-                local: start_transform,
-                ..Default::default()
-            })
-            .insert(physics::Rigidbody{
-                vx: 0.0,
-                vy: 0.0,
-                friction: true
-            })
-            .insert(Zombie)
-            .insert(Pathfinder{
-                target: Vec3::new(rng.gen::<f32>()*INIT_TARGET_RAD,rng.gen::<f32>()*INIT_TARGET_RAD,0.0),
-                angry: false
-            })
-            .insert(ZombieAttackTimer(Timer::from_seconds(ATTACK_TIME, true)));
+        spawn_zombie(&mut commands, start_pos, &game_assets);
     }
 }
 
@@ -119,17 +124,6 @@ fn enemy_pathfind(
     static_query: Query<&Transform, (With<physics::StaticEntity>, Without<Pathfinder>)>,
     player_query: Query<&Transform, (With<player::Player>, Without<physics::StaticEntity>, Without<Pathfinder>)>
 ) {
-    // Desired behavior
-    // ----------------
-    // 
-    // Go towards target.
-    // 
-    // If StaticEntity in the way, either destroy static entity or move around using raycasting
-    // 
-    // else
-    // 
-    // be angry and run towards player
-
     let player = player_query.single();
 
     for (enm_trans, mut enm_pf) in query.iter_mut() {
@@ -144,6 +138,7 @@ fn enemy_pathfind(
         let target_vec = enm_pf.target - enm_trans.translation;
         let target_dist = target_vec.length();
 
+        let mut target_obj = false;
         let mut closest_obj_vec = Vec3::ZERO;
         let mut closest_dist = 10000.0;
 
@@ -160,69 +155,165 @@ fn enemy_pathfind(
                 if stat_vec.length() < closest_dist {
                     closest_dist = stat_vec.length();
                     closest_obj_vec = stat_trans.translation;
+                    target_obj = true;
                 }
             }
         }
 
-        if (enm_pf.target - closest_obj_vec).length() > 20.0 && (player.translation - enm_pf.target).length() > 5.0 {
+        if (enm_pf.target - closest_obj_vec).length() > 20.0 && (player.translation - enm_pf.target).length() > 5.0 && target_obj {
             enm_pf.target = closest_obj_vec;
         }
     }
 }
 
-fn enemy_player_pathfind(
+fn enemy_entity_pathfind(
     mut query: Query<(&Transform, &mut Pathfinder), With<Pathfinder>>,
     static_query: Query<&Transform, (With<physics::StaticEntity>, Without<Pathfinder>)>,
-    player: Query<&Transform, (With<player::Player>, Without<physics::StaticEntity>, Without<Pathfinder>)>
+    ent_att: Query<(&Transform, &Attackable), (With<Attackable>, Without<physics::StaticEntity>, Without<Pathfinder>)>
 ) {
-    // Desired behavior
-    // ----------------
-    // 
-    // Go towards target.
-    // 
-    // If StaticEntity in the way, either destroy static entity or move around using raycasting
-    // 
-    // else
-    // 
-    // be angry and run towards player
-
-    let player = player.single();
-
     for (enm_trans, mut enm_pf) in query.iter_mut() {
-        let dist = dist_between(enm_trans.translation, enm_pf.target);
 
-        let r1 = (player.translation.x - enm_trans.translation.x)/dist;
-        let r2 = (player.translation.y - enm_trans.translation.y)/dist;
+        let mut found_attackable: bool = false;
 
-        let b = Vec2::new(r1, r2);
-        let a = Vec2::new(enm_trans.translation.x, enm_trans.translation.y);
+        for (ent_att_trans, ent_attackable) in ent_att.iter() {
+            let static_vec: Vec<&Transform> = static_query.iter().collect();
 
-        let target_vec = player.translation - enm_trans.translation;
-        let target_dist = target_vec.length();
-
-        let mut is_hindered = false;
-
-        'inner: for stat_trans in static_query.iter() {
-            let x = Vec2::new(stat_trans.translation.x, stat_trans.translation.y);
-
-            let lambda_p = (x.dot(b) - a.dot(b))/b.length_squared();
-
-            let line_dist = (x - (a + lambda_p*b)).length();
-
-            let stat_vec = stat_trans.translation - enm_trans.translation;
-
-            if line_dist < 20.0 && stat_vec.length() < target_dist && stat_vec.dot(target_vec) > 0.0 {
-                is_hindered = true;
-
-                break 'inner;
+            if !is_hindered(&static_vec, &enm_trans, &ent_att_trans) {
+                if ent_attackable.0 as u8 > enm_pf.target_priority as u8 {
+                    enm_pf.target_entity = true;
+                    enm_pf.target = ent_att_trans.translation;
+                    enm_pf.target_priority = ent_attackable.0.clone();
+                    found_attackable = true;
+                }
             }
         }
 
-        if !is_hindered {
-            enm_pf.target = player.translation;
-            enm_pf.angry = true;
-        } else {
-            enm_pf.angry = false;
+        if !found_attackable {
+            enm_pf.target_entity = false;
+            enm_pf.target_priority = TargetPriority::Low;
+        }
+    }
+}
+
+pub fn is_hindered(
+    static_vec: &Vec<&Transform>,   //List of positions of static objects
+    from_trans: &&Transform,
+    to_trans: &&Transform,
+) -> bool {
+    let dist = dist_between(from_trans.translation, to_trans.translation);
+
+    let r1 = (to_trans.translation.x - from_trans.translation.x)/dist;
+    let r2 = (to_trans.translation.y - from_trans.translation.y)/dist;
+
+    let b = Vec2::new(r1, r2);
+    let a = Vec2::new(from_trans.translation.x, from_trans.translation.y);
+
+    let target_vec = to_trans.translation - from_trans.translation;
+    let target_dist = target_vec.length();
+
+    let is_hindered = false;
+
+    for stat_trans in (*static_vec).iter() {
+        let x = Vec2::new(stat_trans.translation.x, stat_trans.translation.y);
+
+        let lambda_p = (x.dot(b) - a.dot(b))/b.length_squared();
+
+        let line_dist = (x - (a + lambda_p*b)).length();
+
+        let stat_vec = stat_trans.translation - from_trans.translation;
+
+        if line_dist < 20.0 && stat_vec.length() < target_dist && stat_vec.dot(target_vec) > 0.0 {
+            return true;
+        }
+    }
+
+    is_hindered
+}
+
+fn spawn_zombie(
+    commands: &mut Commands,
+    spawn_pos: Vec3,
+    game_assets: &Res<GameAssets>
+) {
+    let mut rng = rand::thread_rng();
+
+    (*commands)
+        .spawn_bundle(SpriteSheetBundle {
+            texture_atlas: game_assets.texture_atlas.clone(),
+            sprite: TextureAtlasSprite {
+                index: 2,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert_bundle(TransformBundle{
+            local: Transform::from_translation(spawn_pos),
+            ..Default::default()
+        })
+        .insert(physics::Rigidbody{
+            vx: 0.0,
+            vy: 0.0,
+            friction: true,
+            size: Vec2::new(10.0, 10.0)
+        })
+        .insert(Zombie)
+        .insert(Pathfinder{
+            target: Vec3::new(rng.gen::<f32>()*INIT_TARGET_RAD,rng.gen::<f32>()*INIT_TARGET_RAD,0.0),
+            target_priority: TargetPriority::Low,
+            target_entity: false
+        })
+        .insert(ZombieAttackTimer(Timer::from_seconds(ATTACK_TIME, true)))
+        .insert(NewTargetTimer(Timer::from_seconds(5.0, true)));
+}
+
+fn mutual_repulsion<ENTITYTYPE: Component>(
+    mut query: Query<(&Transform, &mut Rigidbody), With<ENTITYTYPE>>,
+    time: Res<Time>  
+) {
+    let all_pos: Vec<Vec3> = query.iter().map(|q| q.0.translation).collect();
+
+    for (ent_trans, mut rb) in query.iter_mut() {
+        for pos in all_pos.iter() {
+            if ent_trans.translation == *pos {
+                continue;
+            }
+
+            let vec_from = ent_trans.translation - *pos;
+
+            if vec_from.length() <= ENTITY_DIST_REPULSION {
+                rb.vx += vec_from.normalize().x*REPULSION_ACC*time.delta_seconds();
+                rb.vy += vec_from.normalize().y*REPULSION_ACC*time.delta_seconds();
+            }
+        }
+    }
+}
+
+fn random_new_target(
+    mut query: Query<(&Transform, &mut NewTargetTimer, &mut Pathfinder)>,
+    player_query: Query<&Transform, With<player::Player>>,
+    time: Res<Time>
+){
+    let player = player_query.single();
+    let mut rng = rand::thread_rng();
+
+    for (trans, mut timer, mut pf) in query.iter_mut() {
+        if (trans.translation - pf.target).length() < 20.0 && !pf.target_entity {
+            if timer.0.tick(time.delta()).just_finished() {
+                let new_target = player.translation + Vec3::new(rng.gen::<f32>()*INIT_TARGET_RAD, rng.gen::<f32>()*INIT_TARGET_RAD, 0.0);
+
+                pf.target = new_target;
+            }
+        }
+    }
+}
+
+fn entity_health(
+    mut commands: Commands,
+    query: Query<(Entity, &EntityHealth), (With<EntityHealth>, Without<player::Player>)>
+) {
+    for (entity, health) in query.iter() {
+        if health.val <= 0.0 {
+            commands.entity(entity).despawn();
         }
     }
 }

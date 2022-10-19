@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use lerp::Lerp;
 
+use crate::AppState;
+
 const DIFFTHRES: f32 = 2.0;
 
 pub struct PhysicsPlugin;
@@ -9,8 +11,9 @@ impl Plugin for PhysicsPlugin
 {
     fn build(&self, app: &mut App) {
         app
-        .add_system(apply_velocity)
-        .add_system(entity_collision);
+        .add_system_set(SystemSet::on_update(AppState::InGame)
+            .with_system(apply_velocity)
+            .with_system(entity_collision));
     }
 }
 
@@ -26,6 +29,7 @@ pub struct Rigidbody
     pub vx: f32,
     pub vy: f32,
     pub friction: bool,
+    pub size: Vec2
 }
 
 #[derive(Component)]
@@ -57,24 +61,23 @@ pub fn apply_velocity(
 }
 
 pub fn entity_collision(
-    mut entity_query: Query<(Entity, &mut Transform, &mut Rigidbody, &Sprite), With<Rigidbody>>,
+    mut entity_query: Query<(Entity, &mut Transform, &mut Rigidbody), Without<StaticEntity>>,
     mut event_writer: EventWriter<CollisionEvent>,
-    static_query: Query<(Entity, &Transform, &Sprite), (With<StaticEntity>, Without<Rigidbody>)>
+    static_query: Query<(Entity, &Transform, &Rigidbody), With<StaticEntity>>
 ) {
     for (
         ent_entity,
         mut ent_trans,
         mut ent_rb,
-        ent_sprite
     ) in entity_query.iter_mut() {
-        let ent_sprite_size = ent_sprite.custom_size.unwrap();
+        let ent_sprite_size = ent_rb.size;
 
         for (
             stat_entity,
             stat_trans,
-            stat_sprite
+            stat_rb
         ) in static_query.iter() {
-            let stat_sprite_size = stat_sprite.custom_size.unwrap();
+            let stat_sprite_size = stat_rb.size;
 
             let diff_x = stat_trans.translation.x - ent_trans.translation.x;
             let diff_y = stat_trans.translation.y - ent_trans.translation.y;
@@ -86,6 +89,7 @@ pub fn entity_collision(
                 if diff_x > 0.0 {
                     if ent_rb.vx > 0.0 {
                         ent_rb.vx = 0.0;
+
 
                         event_writer.send(CollisionEvent { ent_a: ent_entity, stat_b: stat_entity });
 
@@ -108,7 +112,7 @@ pub fn entity_collision(
                         ent_rb.vy = 0.0;
                         
                         event_writer.send(CollisionEvent { ent_a: ent_entity, stat_b: stat_entity });
-
+                    
                         ent_trans.translation.y = stat_trans.translation.y - ent_sprite_size.y/2.0 - stat_sprite_size.y/2.0 - DIFFTHRES + 0.1;
                     }
                 } else {
