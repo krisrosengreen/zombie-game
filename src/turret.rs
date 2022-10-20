@@ -52,7 +52,7 @@ pub fn spawn_turret(
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: game_assets.texture_atlas.clone(),
             sprite: TextureAtlasSprite {
-                index: 3,
+                index: 5,
                 ..Default::default()
             },
             ..Default::default()
@@ -65,7 +65,7 @@ pub fn spawn_turret(
         .insert(TurretShootTimer(Timer::from_seconds(1.0, true)))
         .insert(TurretBulletTimer(Timer::from_seconds(0.3, true)))
         .insert(TurretCoolTimer(Timer::from_seconds(6.0, true)))
-        .insert(EntityHealth{val: 300.0})
+        .insert(EntityHealth{val: 300.0, func_destruct: turret_destruct})
         .insert(zombie::Attackable(zombie::TargetPriority::Medium));
 }
 
@@ -117,5 +117,11 @@ pub fn turret_targeting(
             }
         }
     }
+}
 
+fn turret_destruct(
+    commands: &mut Commands,
+    entity: &Entity
+) {
+    commands.entity(*entity).despawn();
 }

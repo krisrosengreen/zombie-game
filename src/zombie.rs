@@ -1,7 +1,7 @@
 use bevy::{prelude::*};
 use rand::prelude::*;
 
-use crate::{physics::{self, Rigidbody}, angle_between, player::{self, EntityHealth}, dist_between, AppState, GameAssets};
+use crate::{physics::{self, Rigidbody}, angle_between, player::{self, EntityHealth}, dist_between, AppState, GameAssets, entities::{self, TempEntity}};
 use std::f32::consts::PI;
 
 pub struct ZombiePlugin;
@@ -60,7 +60,6 @@ impl Plugin for ZombiePlugin
             .with_system(enemy_pathfind)
             .with_system(enemy_entity_pathfind)
             .with_system(mutual_repulsion::<Zombie>)
-            .with_system(entity_health)
             .with_system(random_new_target));
     }
 }
@@ -104,7 +103,7 @@ fn zombie_spawner(
 }
 
 fn attack_health_entities(
-    mut health_query: Query<(&Transform, &mut player::EntityHealth)>,
+    mut health_query: Query<(&Transform, &mut player::EntityHealth), Without<Zombie>>,
     mut enemy_query: Query<(&Transform, &mut ZombieAttackTimer), With<Zombie>>,
     time: Res<Time>
 ) {
@@ -241,7 +240,7 @@ fn spawn_zombie(
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: game_assets.texture_atlas.clone(),
             sprite: TextureAtlasSprite {
-                index: 2,
+                index: 4,
                 ..Default::default()
             },
             ..Default::default()
@@ -253,8 +252,7 @@ fn spawn_zombie(
         .insert(physics::Rigidbody{
             vx: 0.0,
             vy: 0.0,
-            friction: true,
-            size: Vec2::new(10.0, 10.0)
+            friction: true
         })
         .insert(Zombie)
         .insert(Pathfinder{
@@ -263,7 +261,18 @@ fn spawn_zombie(
             target_entity: false
         })
         .insert(ZombieAttackTimer(Timer::from_seconds(ATTACK_TIME, true)))
-        .insert(NewTargetTimer(Timer::from_seconds(5.0, true)));
+        .insert(physics::BoxCollider {
+            size: Vec2::new(10.0, 10.0)
+        })
+        .insert(NewTargetTimer(Timer::from_seconds(5.0, true)))
+        .insert(EntityHealth{val: 40.0, func_destruct: zombie_destruct});
+}
+
+fn zombie_destruct(
+    commands: &mut Commands,
+    entity: &Entity
+) {
+    commands.entity(*entity).despawn();
 }
 
 fn mutual_repulsion<ENTITYTYPE: Component>(
@@ -307,13 +316,24 @@ fn random_new_target(
     }
 }
 
-fn entity_health(
-    mut commands: Commands,
-    query: Query<(Entity, &EntityHealth), (With<EntityHealth>, Without<player::Player>)>
-) {
-    for (entity, health) in query.iter() {
-        if health.val <= 0.0 {
-            commands.entity(entity).despawn();
-        }
-    }
+fn spawn_dead(
+    commands: &mut Commands,
+    spawn_pos: Vec3,
+    game_assets: &Res<GameAssets>
+)
+{
+    (*commands)
+        .spawn_bundle(SpriteSheetBundle {
+            texture_atlas: game_assets.texture_atlas.clone(),
+            sprite: TextureAtlasSprite {
+                index: 10,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert_bundle(TransformBundle{
+            local: Transform::from_translation(spawn_pos),
+            ..Default::default()
+        })
+        .insert(entities::TempZombieDead::new());
 }

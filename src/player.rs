@@ -1,5 +1,5 @@
 use bevy::{prelude::*, sprite::Anchor};
-use crate::{physics, weapons, zombie, GameAssets, AppState};
+use crate::{physics::{self, BoxCollider}, weapons, zombie, GameAssets, AppState};
 
 pub const MOVESPEED: f32 = 60.0;
 pub const PLAYER_ACC: f32 = 600.0;
@@ -9,7 +9,8 @@ pub(crate) struct Player;
 
 #[derive(Component)]
 pub struct EntityHealth {
-    pub val: f32
+    pub val: f32,
+    pub func_destruct: fn(&mut Commands, &Entity)
 }
 
 #[derive(Component)]
@@ -59,13 +60,15 @@ fn player_setup(
         .insert(physics::Rigidbody {
             vx: 0.0,
             vy: 0.0,
-            friction: true,
-            size: Vec2::new(10.0, 10.0)
+            friction: true
         })
         .insert(weapons::ReloadTimer(Timer::from_seconds(2.0, true)))
         .insert(weapons::Magazine(weapons::MAGAZINE_SIZE))
         .insert(zombie::Attackable(zombie::TargetPriority::High))
-        .insert(EntityHealth{val: 100.0});
+        .insert(BoxCollider {
+            size: Vec2::new(10.0, 10.0)
+        })
+        .insert(EntityHealth{val: 100.0, func_destruct: player_destruct});
 
     // SPAWN HEALTBAR
     commands
@@ -95,4 +98,11 @@ fn player_health(
     sprite.custom_size = Some(Vec2 { x: health.val, y: 10.0 });
 
     sprite.color = Color::rgb(1.0 - health.val/100.0, health.val/100.0, 0.0);
+}
+
+fn player_destruct(
+    commands: &mut Commands,
+    entity: &Entity
+) {
+
 }

@@ -16,7 +16,6 @@ impl Plugin for PhysicsPlugin
             .with_system(entity_collision));
     }
 }
-
 pub struct CollisionEvent
 {
     pub ent_a: Entity,
@@ -24,12 +23,17 @@ pub struct CollisionEvent
 }
 
 #[derive(Component)]
+pub struct BoxCollider
+{
+    pub size: Vec2
+}
+
+#[derive(Component)]
 pub struct Rigidbody
 {
     pub vx: f32,
     pub vy: f32,
-    pub friction: bool,
-    pub size: Vec2
+    pub friction: bool
 }
 
 #[derive(Component)]
@@ -61,23 +65,25 @@ pub fn apply_velocity(
 }
 
 pub fn entity_collision(
-    mut entity_query: Query<(Entity, &mut Transform, &mut Rigidbody), Without<StaticEntity>>,
+    mut entity_query: Query<(Entity, &mut Transform, &mut Rigidbody, &BoxCollider), Without<StaticEntity>>,
     mut event_writer: EventWriter<CollisionEvent>,
-    static_query: Query<(Entity, &Transform, &Rigidbody), With<StaticEntity>>
+    static_query: Query<(Entity, &Transform, &BoxCollider), With<StaticEntity>>
 ) {
+
     for (
         ent_entity,
         mut ent_trans,
         mut ent_rb,
+        ent_collider
     ) in entity_query.iter_mut() {
-        let ent_sprite_size = ent_rb.size;
+        let ent_sprite_size = ent_collider.size;
 
         for (
             stat_entity,
             stat_trans,
-            stat_rb
+            stat_collider
         ) in static_query.iter() {
-            let stat_sprite_size = stat_rb.size;
+            let stat_sprite_size = stat_collider.size;
 
             let diff_x = stat_trans.translation.x - ent_trans.translation.x;
             let diff_y = stat_trans.translation.y - ent_trans.translation.y;
@@ -89,7 +95,6 @@ pub fn entity_collision(
                 if diff_x > 0.0 {
                     if ent_rb.vx > 0.0 {
                         ent_rb.vx = 0.0;
-
 
                         event_writer.send(CollisionEvent { ent_a: ent_entity, stat_b: stat_entity });
 

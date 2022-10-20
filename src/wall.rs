@@ -1,5 +1,5 @@
 use bevy::{prelude::*};
-use crate::{physics::StaticEntity, player::EntityHealth, zombie, AppState, GameAssets};
+use crate::{physics::{StaticEntity, BoxCollider}, player::EntityHealth, zombie, AppState, GameAssets};
 
 pub struct WallPlugin;
 
@@ -62,5 +62,15 @@ pub fn spawn_wall(
         .insert(Wall)
         .insert(StaticEntity)
         .insert(zombie::Attackable(zombie::TargetPriority::Medium))
-        .insert(EntityHealth{val: 200.0});
+        .insert(EntityHealth{val: 200.0, func_destruct: wall_destruct})
+        .insert(BoxCollider {
+            size: Vec2::new(20.0, 20.0)
+        });
+}
+
+fn wall_destruct(
+    commands: &mut Commands,
+    entity: &Entity
+) {
+    commands.entity(*entity).despawn();
 }

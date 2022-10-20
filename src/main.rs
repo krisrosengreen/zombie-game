@@ -5,6 +5,9 @@ mod zombie;
 mod player;
 mod weapons;
 mod construct;
+mod main_menu;
+mod inventory;
+mod entities;
 
 use bevy::{prelude::*, render::camera::RenderTarget}; 
 
@@ -39,7 +42,7 @@ fn main() {
     .insert_resource(MouseLoc{x: 0.0, y: 0.0})
     .insert_resource(construct::BlockSelection{block: construct::SelectionTypes::WallBlock})
     .add_event::<physics::CollisionEvent>()
-    .add_state(AppState::InGame)
+    .add_state(AppState::MainMenu)
     .add_plugin(weapons::WeaponsPlugin)
     .add_plugin(player::PlayerPlugin)
     .add_plugin(zombie::ZombiePlugin)
@@ -47,6 +50,9 @@ fn main() {
     .add_plugin(wall::WallPlugin)
     .add_plugin(physics::PhysicsPlugin)
     .add_plugin(construct::ConstructionPlugin)
+    .add_plugin(main_menu::MainMenuPlugin)
+    .add_plugin(inventory::InventoryPlugin)
+    .add_plugin(entities::EntitiesPlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
         .with_system(keyboard_actions)
@@ -62,15 +68,19 @@ fn setup(
     commands.spawn_bundle(Camera2dBundle::default())
     .insert(MainCamera);
 
+    // Get the texture sheet
     let texture_handle = asset_server.load("Sheet.png");
     let texture_atlas = TextureAtlas::from_grid(texture_handle,
-    Vec2::new(20.0,20.0), 2, 2);
+    Vec2::new(20.0,20.0), 4, 3);
 
     let texture_atlas_handle = (texture_atlases).add(texture_atlas);
     
     commands.insert_resource(GameAssets{
         texture_atlas: texture_atlas_handle.clone()
     });
+
+    // Get the texture of the inventory
+    
 }
 
 fn keyboard_actions(

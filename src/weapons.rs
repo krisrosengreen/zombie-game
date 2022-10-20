@@ -1,11 +1,12 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{physics, zombie, dist_between, MouseLoc, player, angle_between, AppState};
+use crate::{physics::{self, BoxCollider}, dist_between, MouseLoc, player::{self, EntityHealth, Player}, angle_between, AppState};
 
 pub const BLLT_SPEED: f32 = 500.0;
 pub const BLLT_RANDOM: f32 = 0.1;
 pub const MAGAZINE_SIZE: u8 = 30;
+pub const BLLT_DMG: f32 = 33.0;
 
 #[derive(Component)]
 pub struct Bullet;
@@ -37,7 +38,7 @@ fn shot_bullets(
     mut query: Query<(Entity, &mut Transform), With<Bullet>>,
     mut commands: Commands,
     mut event_reader: EventReader<physics::CollisionEvent>,
-    zombie: Query<(Entity, &Transform), (With<zombie::Zombie>, Without<Bullet>)>
+    mut health_query: Query<(&Transform, &mut EntityHealth), (Without<Bullet>, Without<Player>)>
 ) {
     let bullet_ents: Vec<Entity> = query.iter().map(|(ent, _trans)| ent).collect();
     
@@ -47,20 +48,22 @@ fn shot_bullets(
         }
     }
 
-    'outer: for (bullet_entity, bullet) in query.iter_mut() {
+    // Check if a bullet is near an entity containing the component EntityHealth
+    // If so, despawn the bullet and remove health from the entity.
+    'outer: for (b_ent, b_trans) in query.iter() {
+        for (helt_trans, mut helt_health) in health_query.iter_mut() {
+            if (b_trans.translation - helt_trans.translation).length() < 20.0 {
+                commands.entity(b_ent).despawn();
+                helt_health.val -= BLLT_DMG;
+                continue 'outer;
+            }
+        }
+    }
 
+    for (bullet_entity, bullet) in query.iter_mut() {
         if dist_between(Vec3::new(0.0,0.0,0.0), bullet.translation) > 1000.0 {
             commands.entity(bullet_entity).despawn();
             continue;
-        }
-
-        for (zombie_entity, zombie_trans) in zombie.iter() {
-            if dist_between(zombie_trans.translation, bullet.translation) < 5.0 {
-                commands.entity(zombie_entity).despawn();
-                commands.entity(bullet_entity).despawn();
-
-                continue 'outer;
-            }
         }
     }
 }
@@ -124,6 +127,8 @@ pub fn spawn_bullet(
             vx: (angle + rand_angle).cos()*BLLT_SPEED,
             vy: (angle + rand_angle).sin()*BLLT_SPEED,
             friction: false,
+        })
+        .insert(BoxCollider{
             size: Vec2::new(5.0, 5.0)
         });
         
