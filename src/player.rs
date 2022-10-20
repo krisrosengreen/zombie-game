@@ -1,17 +1,11 @@
 use bevy::{prelude::*, sprite::Anchor};
-use crate::{physics::{self, BoxCollider}, weapons, zombie, GameAssets, AppState};
+use crate::{physics::{self, BoxCollider}, weapons, zombie, GameAssets, AppState, entities::EntityHealth};
 
-pub const MOVESPEED: f32 = 60.0;
+pub const MOVESPEED: f32 = 40.0;
 pub const PLAYER_ACC: f32 = 600.0;
 
 #[derive(Component)]
 pub(crate) struct Player;
-
-#[derive(Component)]
-pub struct EntityHealth {
-    pub val: f32,
-    pub func_destruct: fn(&mut Commands, &Entity)
-}
 
 #[derive(Component)]
 pub(crate) struct HealthBar;
@@ -35,16 +29,6 @@ fn player_setup(
     game_asset: Res<GameAssets>
 ) {
     commands
-        /*
-        .spawn_bundle(SpriteBundle {
-            sprite: Sprite{
-                color: Color::rgb(0.7,0.7,0.7),
-                custom_size: Some(Vec2::new(10.0,10.0)),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        */
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: game_asset.texture_atlas.clone(),
             sprite: TextureAtlasSprite {
@@ -54,6 +38,7 @@ fn player_setup(
             ..Default::default()
         })
         .insert_bundle(TransformBundle{
+            local: Transform::from_xyz(0.0, 0.0, 5.0),
             ..Default::default()
         })
         .insert(Player)
@@ -82,7 +67,7 @@ fn player_setup(
             ..Default::default()
         })
         .insert_bundle(TransformBundle{
-            local: Transform::from_xyz(-400.0, 300.0, 0.0),
+            local: Transform::from_xyz(-400.0, 300.0, 10.0),
             ..Default::default()
         })
         .insert(HealthBar);
@@ -101,8 +86,10 @@ fn player_health(
 }
 
 fn player_destruct(
-    commands: &mut Commands,
-    entity: &Entity
+    _commands: &mut Commands,
+    _entity: &Entity,
+    _game_assets: &Res<GameAssets>,
+    _parent_pos: &Transform
 ) {
 
 }

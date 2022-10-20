@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{physics::{self, BoxCollider}, dist_between, MouseLoc, player::{self, EntityHealth, Player}, angle_between, AppState};
+use crate::{physics::{self, BoxCollider}, dist_between, MouseLoc, player::{self, Player}, angle_between, AppState, entities::EntityHealth, turret::Turret};
 
 pub const BLLT_SPEED: f32 = 500.0;
 pub const BLLT_RANDOM: f32 = 0.1;
@@ -26,7 +26,7 @@ impl Plugin for WeaponsPlugin
     fn build(&self, app: &mut App)
     {
         app
-        .insert_resource(GunTimer(Timer::from_seconds(0.1, true)))
+        .insert_resource(GunTimer(Timer::from_seconds(0.15, true)))
         .add_system_set(SystemSet::on_update(AppState::InGame)
             .with_system(shot_bullets)
             .with_system(shoot)
@@ -38,7 +38,7 @@ fn shot_bullets(
     mut query: Query<(Entity, &mut Transform), With<Bullet>>,
     mut commands: Commands,
     mut event_reader: EventReader<physics::CollisionEvent>,
-    mut health_query: Query<(&Transform, &mut EntityHealth), (Without<Bullet>, Without<Player>)>
+    mut health_query: Query<(&Transform, &mut EntityHealth), (Without<Bullet>, Without<Player>, Without<Turret>)>
 ) {
     let bullet_ents: Vec<Entity> = query.iter().map(|(ent, _trans)| ent).collect();
     

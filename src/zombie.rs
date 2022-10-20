@@ -1,7 +1,7 @@
 use bevy::{prelude::*};
 use rand::prelude::*;
 
-use crate::{physics::{self, Rigidbody}, angle_between, player::{self, EntityHealth}, dist_between, AppState, GameAssets, entities::{self, TempEntity}};
+use crate::{physics::{self, Rigidbody}, angle_between, player::{self}, dist_between, AppState, GameAssets, entities::{self, TempEntity, EntityHealth}};
 use std::f32::consts::PI;
 
 pub struct ZombiePlugin;
@@ -47,12 +47,18 @@ pub struct Pathfinder
 
 struct ZombieTimer(Timer);
 
+struct ZombieTimeoutTimer(Timer);
+
+struct ZombieLevelTimer(Timer);
+
 impl Plugin for ZombiePlugin
 {
     fn build(&self, app: &mut App)
     {
         app
-        .insert_resource(ZombieTimer(Timer::from_seconds(2.0, true)))
+        .insert_resource(ZombieTimer(Timer::from_seconds(0.3, true)))
+        .insert_resource(ZombieTimeoutTimer(Timer::from_seconds(20.0, true)))
+        .insert_resource(ZombieLevelTimer(Timer::from_seconds(60.0, true)))
         .add_system_set(SystemSet::on_update(AppState::InGame) 
             .with_system(zombie_ai)
             .with_system(zombie_spawner)
@@ -88,22 +94,37 @@ pub fn zombie_ai(
 
 fn zombie_spawner(
     mut commands: Commands,
-    mut timer: ResMut<ZombieTimer>,
+    mut spawn_timer: ResMut<ZombieTimer>,
+    mut timeout_timer: ResMut<ZombieTimeoutTimer>,
+    mut level_timer: ResMut<ZombieLevelTimer>,
     time: Res<Time>,
     game_assets: Res<GameAssets>
 ) {
-    if timer.0.tick(time.delta()).just_finished() {
-        let mut rng = rand::thread_rng();
-        let angle: f32 = rng.gen::<f32>() * 2.0 * PI;
+    if timeout_timer.0.just_finished() {
+        if !level_timer.0.tick(time.delta()).just_finished() {
+            if spawn_timer.0.tick(time.delta()).just_finished() {
+                let mut rng = rand::thread_rng();
+                let angle: f32 = rng.gen::<f32>() * 2.0 * PI;
 
-        let start_pos = Vec3::new(angle.cos() * START_DIST, angle.sin() * START_DIST, 0.0);
+                let start_pos = Vec3::new(angle.cos() * START_DIST, angle.sin() * START_DIST, 2.0);
 
-        spawn_zombie(&mut commands, start_pos, &game_assets);
+                if rng.gen::<f32>() > 0.1 {
+                    spawn_zombie(&mut commands, start_pos, &game_assets);
+                } else {
+                    println!("Spawning chungus");
+                    spawn_chungus_zombie(&mut commands, start_pos, &game_assets);
+                }
+            }
+        } else {
+            timeout_timer.0.tick(time.delta());
+        }
+    } else {
+        timeout_timer.0.tick(time.delta());
     }
 }
 
 fn attack_health_entities(
-    mut health_query: Query<(&Transform, &mut player::EntityHealth), Without<Zombie>>,
+    mut health_query: Query<(&Transform, &mut EntityHealth), Without<Zombie>>,
     mut enemy_query: Query<(&Transform, &mut ZombieAttackTimer), With<Zombie>>,
     time: Res<Time>
 ) {
@@ -265,14 +286,61 @@ fn spawn_zombie(
             size: Vec2::new(10.0, 10.0)
         })
         .insert(NewTargetTimer(Timer::from_seconds(5.0, true)))
-        .insert(EntityHealth{val: 40.0, func_destruct: zombie_destruct});
+        .insert(EntityHealth{val: 20.0, func_destruct: zombie_destruct});
+}
+
+fn spawn_chungus_zombie(
+    commands: &mut Commands,
+    spawn_pos: Vec3,
+    game_assets: &Res<GameAssets>
+) {
+    let mut rng = rand::thread_rng();
+
+    (*commands)
+        .spawn_bundle(SpriteSheetBundle {
+            texture_atlas: game_assets.texture_atlas.clone(),
+            sprite: TextureAtlasSprite {
+                index: 4,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert_bundle(TransformBundle{
+            local: Transform{
+                translation: spawn_pos,
+                scale: Vec3::ONE * 2.0,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(physics::Rigidbody{
+            vx: 0.0,
+            vy: 0.0,
+            friction: true
+        })
+        .insert(Zombie)
+        .insert(Pathfinder{
+            target: Vec3::new(rng.gen::<f32>()*INIT_TARGET_RAD,rng.gen::<f32>()*INIT_TARGET_RAD,0.0),
+            target_priority: TargetPriority::Low,
+            target_entity: false
+        })
+        .insert(ZombieAttackTimer(Timer::from_seconds(ATTACK_TIME, true)))
+        .insert(physics::BoxCollider {
+            size: Vec2::new(30.0, 30.0)
+        })
+        .insert(NewTargetTimer(Timer::from_seconds(5.0, true)))
+        .insert(EntityHealth{val: 300.0, func_destruct: zombie_destruct});
 }
 
 fn zombie_destruct(
     commands: &mut Commands,
-    entity: &Entity
+    entity: &Entity,
+    game_assets: &Res<GameAssets>,
+    parent_trans: &Transform
 ) {
     commands.entity(*entity).despawn();
+    
+    spawn_dead(commands, parent_trans, game_assets);
 }
 
 fn mutual_repulsion<ENTITYTYPE: Component>(
@@ -318,7 +386,7 @@ fn random_new_target(
 
 fn spawn_dead(
     commands: &mut Commands,
-    spawn_pos: Vec3,
+    spawn_trans: &Transform,
     game_assets: &Res<GameAssets>
 )
 {
@@ -332,7 +400,7 @@ fn spawn_dead(
             ..Default::default()
         })
         .insert_bundle(TransformBundle{
-            local: Transform::from_translation(spawn_pos),
+            local: spawn_trans.clone(),
             ..Default::default()
         })
         .insert(entities::TempZombieDead::new());

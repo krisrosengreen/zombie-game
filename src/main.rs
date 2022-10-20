@@ -8,6 +8,7 @@ mod construct;
 mod main_menu;
 mod inventory;
 mod entities;
+mod environment;
 
 use bevy::{prelude::*, render::camera::RenderTarget}; 
 
@@ -32,7 +33,7 @@ pub struct GameAssets
 enum AppState {
     MainMenu,
     InGame,
-    Paused,
+    _Paused,
 }
 
 fn main() {
@@ -53,6 +54,7 @@ fn main() {
     .add_plugin(main_menu::MainMenuPlugin)
     .add_plugin(inventory::InventoryPlugin)
     .add_plugin(entities::EntitiesPlugin)
+    .add_plugin(environment::EnvironmentPlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
         .with_system(keyboard_actions)

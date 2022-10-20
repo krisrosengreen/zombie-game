@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{physics::{StaticEntity}, angle_between, zombie::{Zombie, self, Pathfinder}, weapons::{self, BLLT_RANDOM}, player::EntityHealth, AppState, GameAssets};
+use crate::{physics::{StaticEntity}, angle_between, zombie::{Zombie, self, Pathfinder}, weapons::{self, BLLT_RANDOM}, AppState, GameAssets, entities::{EntityHealth, TempTurretDestroyed, TempEntity}};
 
 #[derive(Component)]
 pub struct Turret;
@@ -39,7 +39,7 @@ fn turret_setup(
     mut commands: Commands,
     game_assets: Res<GameAssets>
 ) {
-    let spawn_pos = Vec3::new(0.0, 120.0, 0.0);
+    let spawn_pos = Vec3::new(0.0, 120.0, 3.0);
     spawn_turret(&mut commands, spawn_pos, &game_assets);
 }
 
@@ -62,8 +62,8 @@ pub fn spawn_turret(
             ..Default::default()
         })
         .insert(Turret)
-        .insert(TurretShootTimer(Timer::from_seconds(1.0, true)))
-        .insert(TurretBulletTimer(Timer::from_seconds(0.3, true)))
+        .insert(TurretShootTimer(Timer::from_seconds(1.5, true)))
+        .insert(TurretBulletTimer(Timer::from_seconds(0.5, true)))
         .insert(TurretCoolTimer(Timer::from_seconds(6.0, true)))
         .insert(EntityHealth{val: 300.0, func_destruct: turret_destruct})
         .insert(zombie::Attackable(zombie::TargetPriority::Medium));
@@ -109,7 +109,7 @@ pub fn turret_targeting(
                     let angle = angle_between(turret.translation, target_shoot);
 
                     let mut rng = rand::thread_rng();
-                    let rand_angle: f32 = (rng.gen::<f32>() - 0.5) * 4.0 * BLLT_RANDOM;
+                    let rand_angle: f32 = (rng.gen::<f32>() - 0.5) * 7.0 * BLLT_RANDOM;
 
                     weapons::spawn_bullet(&mut commands, turret.translation, angle, rand_angle);
 
@@ -121,7 +121,40 @@ pub fn turret_targeting(
 
 fn turret_destruct(
     commands: &mut Commands,
-    entity: &Entity
+    entity: &Entity,
+    game_assets: &Res<GameAssets>,
+    parent_trans: &Transform
 ) {
     commands.entity(*entity).despawn();
+
+    spawn_destroyed(commands, parent_trans.translation, game_assets);
+}
+
+fn spawn_destroyed(
+    commands: &mut Commands,
+    spawn_pos: Vec3,
+    game_assets: &Res<GameAssets>
+)
+{
+    let mut rng = thread_rng();
+
+    for _ in 0..5
+    {
+        let rand_vec: Vec3 = Vec3::new(rng.gen::<f32>()*20.0, rng.gen::<f32>()*20.0, rng.gen::<f32>()*20.0);
+
+        (*commands)
+            .spawn_bundle(SpriteSheetBundle {
+                texture_atlas: game_assets.texture_atlas.clone(),
+                sprite: TextureAtlasSprite {
+                    index: 11,
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .insert_bundle(TransformBundle{
+                local: Transform::from_translation(spawn_pos + rand_vec),
+                ..Default::default()
+            })
+            .insert(TempTurretDestroyed::new());
+    }
 }

@@ -60,7 +60,7 @@ fn build(
         let x_pos = mouseloc.x + x_diff;
         let y_pos = mouseloc.y + y_diff;
 
-        let spawn_pos = Vec3::new(x_pos, y_pos, 0.0);
+        let spawn_pos = Vec3::new(x_pos, y_pos, 3.0);
 
         if block.block == SelectionTypes::WallBlock
         {
