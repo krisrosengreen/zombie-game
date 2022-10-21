@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{physics::{self, BoxCollider}, dist_between, MouseLoc, player::{self, Player}, angle_between, AppState, entities::EntityHealth, turret::Turret, fence::Fence};
+use crate::{physics::{self, BoxCollider}, dist_between, MouseLoc, player::{self, Player}, angle_between, AppState, entities::EntityHealth, turret::Turret, fence::Fence, wheat::Wheat};
 
 pub const BLLT_SPEED: f32 = 500.0;
 pub const BLLT_RANDOM: f32 = 0.1;
@@ -38,7 +38,7 @@ fn shot_bullets(
     mut query: Query<(Entity, &mut Transform), With<Bullet>>,
     mut commands: Commands,
     mut event_reader: EventReader<physics::CollisionEvent>,
-    mut health_query: Query<(&Transform, &mut EntityHealth), (Without<Bullet>, Without<Player>, Without<Turret>, Without<Fence>)>
+    mut health_query: Query<(&Transform, &mut EntityHealth), (Without<Bullet>, Without<Player>, Without<Turret>, Without<Fence>, Without<Wheat>)>
 ) {
     let bullet_ents: Vec<Entity> = query.iter().map(|(ent, _trans)| ent).collect();
     

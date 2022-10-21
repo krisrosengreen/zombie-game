@@ -12,6 +12,7 @@ mod environment;
 mod tripmine;
 mod fence;
 mod wheat;
+mod windmill;
 
 use bevy::{prelude::*, render::camera::RenderTarget}; 
 
@@ -61,6 +62,7 @@ fn main() {
     .add_plugin(tripmine::TripMinePlugin)
     .add_plugin(fence::FencePlugin)
     .add_plugin(wheat::WheatPlugin)
+    .add_plugin(windmill::WindMillPlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
         .with_system(keyboard_actions)
@@ -136,6 +138,11 @@ fn keyboard_actions(
 
     if input.pressed(KeyCode::Key5) {
         block.block = construct::SelectionTypes::Wheat;
+    }
+
+    if input.pressed(KeyCode::Key6)
+    {
+        block.block = construct::SelectionTypes::WindMill;
     }
 
     if input.pressed(KeyCode::R)

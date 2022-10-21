@@ -2,6 +2,8 @@ use bevy::prelude::*;
 
 use crate::{GameAssets, AppState, zombie, zombie::TargetPriority, entities::EntityHealth};
 
+const TIME_STATE_CHANGE: f32 = 45.0;
+
 #[derive(Component)]
 pub struct Wheat
 {
@@ -61,7 +63,7 @@ pub fn spawn_wheat(
         })
         .insert(Wheat {
             state: 0,
-            timer: Timer::from_seconds(5.0, true)
+            timer: Timer::from_seconds(TIME_STATE_CHANGE, true)
         });
 }
 
