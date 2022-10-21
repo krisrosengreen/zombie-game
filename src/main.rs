@@ -58,6 +58,7 @@ fn main() {
     .add_plugin(entities::EntitiesPlugin)
     .add_plugin(environment::EnvironmentPlugin)
     .add_plugin(tripmine::TripMinePlugin)
+    .add_plugin(fence::FencePlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
         .with_system(keyboard_actions)
@@ -125,6 +126,10 @@ fn keyboard_actions(
 
     if input.pressed(KeyCode::Key3) {
         block.block = construct::SelectionTypes::TripMine;
+    }
+
+    if input.pressed(KeyCode::Key4) {
+        block.block = construct::SelectionTypes::Fence;
     }
 
     if input.pressed(KeyCode::R)

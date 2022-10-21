@@ -11,7 +11,7 @@ const ZOMB_ANGRY_SPEED: f32 = 180.0;
 const ZOMB_IDLE_SPEED: f32 = 30.0;
 
 const ATTACK_DMG: f32 = 10.0;
-const START_DIST: f32 = 500.0;
+const START_DIST: f32 = 900.0;
 const ATTACK_TIME: f32 = 0.3;
 const INIT_TARGET_RAD: f32 = 30.0;
 
@@ -57,7 +57,7 @@ impl Plugin for ZombiePlugin
     {
         app
         .insert_resource(ZombieTimer(Timer::from_seconds(0.3, true)))
-        .insert_resource(ZombieTimeoutTimer(Timer::from_seconds(60.0, true)))
+        .insert_resource(ZombieTimeoutTimer(Timer::from_seconds(120.0, true)))
         .insert_resource(ZombieLevelTimer(Timer::from_seconds(60.0, true)))
         .add_system_set(SystemSet::on_update(AppState::InGame) 
             .with_system(zombie_ai)
@@ -108,7 +108,7 @@ fn zombie_spawner(
 
                 let start_pos = Vec3::new(angle.cos() * START_DIST, angle.sin() * START_DIST, 2.0);
 
-                if rng.gen::<f32>() > 0.1 {
+                if rng.gen::<f32>() > 0.05 {
                     spawn_zombie(&mut commands, start_pos, &game_assets);
                 } else {
                     spawn_chungus_zombie(&mut commands, start_pos, &game_assets);

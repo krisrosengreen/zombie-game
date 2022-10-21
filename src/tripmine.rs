@@ -1,14 +1,14 @@
 use bevy::prelude::*;
 
 const TRIGGER_DIST: f32 = 20.0;
-const BLAST_RADIUS: f32 = 150.0;
+const BLAST_RADIUS: f32 = 100.0;
 const EXPLOSION_DMG_PER_FRAME: f32 = 200.0;
 const EXPLOSIVE_ACC: f32 = 400.0;
 const EXPLOSION_TIME: f32 = 0.5;
 
 pub struct TripMinePlugin;
 
-use crate::{zombie::{Zombie}, AppState, entities::EntityHealth, GameAssets, physics::{StaticEntity, BoxCollider}};
+use crate::{zombie::{Zombie}, AppState, entities::EntityHealth, GameAssets, physics::{StaticEntity}};
 
 impl Plugin for TripMinePlugin
 {
@@ -102,11 +102,11 @@ fn spawn_explosion(
 fn explosion_behaviour(
     mut commands: Commands,
     mut expl_query: Query<(Entity, &mut Transform, &mut Explosion), With<Explosion>>,
-    mut zombie_query: Query<(&mut Transform, &mut EntityHealth), (With<EntityHealth>, Without<Explosion>)>,
+    mut zombie_query: Query<(&Transform, &mut EntityHealth), (With<EntityHealth>, Without<Explosion>)>,
     time: Res<Time>
 ) {
     for (expl_entity, mut expl_trans, mut expl_expl) in expl_query.iter_mut() {
-        for (mut zombie_trans, mut zombie_health) in zombie_query.iter_mut() {
+        for (zombie_trans, mut zombie_health) in zombie_query.iter_mut() {
             let expl_to_zomb: Vec3 = zombie_trans.translation - expl_trans.translation;            
             if expl_to_zomb.length() <= BLAST_RADIUS  {
                 zombie_health.val -= EXPLOSION_DMG_PER_FRAME*time.delta_seconds();

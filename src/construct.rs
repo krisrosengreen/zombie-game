@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::fence::spawn_fence;
 use crate::tripmine::spawn_tripmine;
 use crate::{MouseLoc, AppState, GameAssets};
 use crate::player::Player;
@@ -28,7 +29,8 @@ pub enum SelectionTypes
 {
     WallBlock,
     TurretBlock,
-    TripMine
+    TripMine,
+    Fence
 }
 
 fn build(
@@ -71,6 +73,8 @@ fn build(
             turret::spawn_turret(&mut commands, spawn_pos, &game_assets);
         } else if block.block == SelectionTypes::TripMine {
             spawn_tripmine(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
+        } else if block.block == SelectionTypes::Fence {
+            spawn_fence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
         }
     }
 }

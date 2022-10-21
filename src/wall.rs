@@ -56,7 +56,7 @@ pub fn spawn_wall(
         .insert(Wall)
         .insert(StaticEntity)
         .insert(zombie::Attackable(zombie::TargetPriority::Low))
-        .insert(EntityHealth{val: 200.0, func_destruct: wall_destruct})
+        .insert(EntityHealth{val: 400.0, func_destruct: wall_destruct})
         .insert(BoxCollider {
             size: Vec2::new(20.0, 20.0)
         });
