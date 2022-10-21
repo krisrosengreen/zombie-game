@@ -57,7 +57,7 @@ impl Plugin for ZombiePlugin
     {
         app
         .insert_resource(ZombieTimer(Timer::from_seconds(0.3, true)))
-        .insert_resource(ZombieTimeoutTimer(Timer::from_seconds(20.0, true)))
+        .insert_resource(ZombieTimeoutTimer(Timer::from_seconds(60.0, true)))
         .insert_resource(ZombieLevelTimer(Timer::from_seconds(60.0, true)))
         .add_system_set(SystemSet::on_update(AppState::InGame) 
             .with_system(zombie_ai)
@@ -111,7 +111,6 @@ fn zombie_spawner(
                 if rng.gen::<f32>() > 0.1 {
                     spawn_zombie(&mut commands, start_pos, &game_assets);
                 } else {
-                    println!("Spawning chungus");
                     spawn_chungus_zombie(&mut commands, start_pos, &game_assets);
                 }
             }

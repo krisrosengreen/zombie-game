@@ -9,6 +9,8 @@ mod main_menu;
 mod inventory;
 mod entities;
 mod environment;
+mod tripmine;
+mod fence;
 
 use bevy::{prelude::*, render::camera::RenderTarget}; 
 
@@ -55,6 +57,7 @@ fn main() {
     .add_plugin(inventory::InventoryPlugin)
     .add_plugin(entities::EntitiesPlugin)
     .add_plugin(environment::EnvironmentPlugin)
+    .add_plugin(tripmine::TripMinePlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
         .with_system(keyboard_actions)
@@ -73,7 +76,7 @@ fn setup(
     // Get the texture sheet
     let texture_handle = asset_server.load("Sheet.png");
     let texture_atlas = TextureAtlas::from_grid(texture_handle,
-    Vec2::new(20.0,20.0), 4, 3);
+    Vec2::new(20.0,20.0), 4, 4);
 
     let texture_atlas_handle = (texture_atlases).add(texture_atlas);
     
@@ -115,15 +118,19 @@ fn keyboard_actions(
         block.block = construct::SelectionTypes::WallBlock;
     }
 
+    if input.pressed(KeyCode::Key2)
+    {
+        block.block = construct::SelectionTypes::TurretBlock;
+    }
+
+    if input.pressed(KeyCode::Key3) {
+        block.block = construct::SelectionTypes::TripMine;
+    }
+
     if input.pressed(KeyCode::R)
     {
         let mut magazine = magazine.single_mut();
         magazine.0 = 0;
-    }
-
-    if input.pressed(KeyCode::Key2)
-    {
-        block.block = construct::SelectionTypes::TurretBlock;
     }
 
     rb.vx = rb.vx.clamp(-player::MOVESPEED, player::MOVESPEED);

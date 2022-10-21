@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::tripmine::spawn_tripmine;
 use crate::{MouseLoc, AppState, GameAssets};
 use crate::player::Player;
 use crate::{wall, turret};
@@ -26,7 +27,8 @@ impl Plugin for ConstructionPlugin
 pub enum SelectionTypes
 {
     WallBlock,
-    TurretBlock
+    TurretBlock,
+    TripMine
 }
 
 fn build(
@@ -67,6 +69,8 @@ fn build(
             wall::spawn_wall(&mut commands, spawn_pos, &game_assets);
         } else if block.block == SelectionTypes::TurretBlock {
             turret::spawn_turret(&mut commands, spawn_pos, &game_assets);
+        } else if block.block == SelectionTypes::TripMine {
+            spawn_tripmine(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
         }
     }
 }
