@@ -11,6 +11,7 @@ mod entities;
 mod environment;
 mod tripmine;
 mod fence;
+mod wheat;
 
 use bevy::{prelude::*, render::camera::RenderTarget}; 
 
@@ -59,6 +60,7 @@ fn main() {
     .add_plugin(environment::EnvironmentPlugin)
     .add_plugin(tripmine::TripMinePlugin)
     .add_plugin(fence::FencePlugin)
+    .add_plugin(wheat::WheatPlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
         .with_system(keyboard_actions)
@@ -77,7 +79,7 @@ fn setup(
     // Get the texture sheet
     let texture_handle = asset_server.load("Sheet.png");
     let texture_atlas = TextureAtlas::from_grid(texture_handle,
-    Vec2::new(20.0,20.0), 4, 4);
+    Vec2::new(20.0,20.0), 4, 6);
 
     let texture_atlas_handle = (texture_atlases).add(texture_atlas);
     
@@ -130,6 +132,10 @@ fn keyboard_actions(
 
     if input.pressed(KeyCode::Key4) {
         block.block = construct::SelectionTypes::Fence;
+    }
+
+    if input.pressed(KeyCode::Key5) {
+        block.block = construct::SelectionTypes::Wheat;
     }
 
     if input.pressed(KeyCode::R)

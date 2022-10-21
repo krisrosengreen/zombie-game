@@ -4,7 +4,7 @@ use crate::fence::spawn_fence;
 use crate::tripmine::spawn_tripmine;
 use crate::{MouseLoc, AppState, GameAssets};
 use crate::player::Player;
-use crate::{wall, turret};
+use crate::{wall, turret, wheat};
 
 const MAX_CONSTRUCT_DIST: f32 = 50.0;
 
@@ -30,7 +30,8 @@ pub enum SelectionTypes
     WallBlock,
     TurretBlock,
     TripMine,
-    Fence
+    Fence,
+    Wheat
 }
 
 fn build(
@@ -75,6 +76,8 @@ fn build(
             spawn_tripmine(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
         } else if block.block == SelectionTypes::Fence {
             spawn_fence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
+        } else if block.block == SelectionTypes::Wheat {
+            wheat::spawn_wheat(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
         }
     }
 }

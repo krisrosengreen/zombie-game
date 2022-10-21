@@ -1,38 +1,17 @@
 use bevy::{prelude::*};
-use crate::{physics::{StaticEntity, BoxCollider}, entities::EntityHealth, zombie, AppState, GameAssets};
+use crate::{physics::{StaticEntity, BoxCollider}, entities::EntityHealth, zombie, GameAssets};
 
 pub struct WallPlugin;
 
 impl Plugin for WallPlugin
 {
-    fn build(&self, app: &mut App) {
-        app
-        .add_system_set(SystemSet::on_enter(AppState::InGame)
-            .with_system(setup_walls));
+    fn build(&self, _app: &mut App) {
+
     }
 }
 
 #[derive(Component)]
 pub struct Wall;
-
-pub fn setup_walls(
-    mut _commands: Commands,
-    _game_assets: Res<GameAssets>,
-) {
-    /*
-    for i in -10..10 {
-        let spawn_pos = Vec3::new(20.0*(i as f32), 100.0, 2.0);
-
-        spawn_wall(&mut commands, spawn_pos, &game_assets);
-    }
-
-    for i in -10..10 {
-        let spawn_pos = Vec3::new(20.0*(i as f32), -100.0, 2.0);
-
-        spawn_wall(&mut commands, spawn_pos, &game_assets);
-    }
-    */
-}
 
 pub fn spawn_wall(
     commands: &mut Commands,
