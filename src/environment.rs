@@ -5,7 +5,7 @@ use crate::{AppState, GameAssets, physics::{StaticEntity, BoxCollider}, zombie, 
 
 const NUM_TREES: u8 = 50;
 
-const NUM_ANIMALS: u8 = 10;
+const NUM_ANIMALS: u8 = 25;
 
 #[derive(Component)]
 pub struct Tree;
@@ -78,6 +78,7 @@ fn spawn_tree(
     spawn_pos: Vec3,
     game_asset: &Res<GameAssets>
 ) {
+
     (*commands)
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: game_asset.texture_atlas.clone(),

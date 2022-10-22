@@ -18,6 +18,8 @@ mod animals;
 
 use bevy::{prelude::*, render::camera::RenderTarget}; 
 
+// Altered TextureAtlasSprite to make sprite centered
+
 #[derive(Component)]
 struct MainCamera;
 

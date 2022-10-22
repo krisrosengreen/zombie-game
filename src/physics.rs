@@ -73,6 +73,10 @@ pub fn apply_velocity(
 
         entity.translation.x += rb.vx*time.delta_seconds();
         entity.translation.y += rb.vy*time.delta_seconds();
+
+        let vel_size: f64 = (rb.vx.powf(2.0) + rb.vy.powf(2.0)).sqrt() as f64;
+
+        entity.rotation = Quat::from_rotation_z(((time.seconds_since_startup()*7.0).sin() * vel_size / 100.0) as f32);
     }
 }
 

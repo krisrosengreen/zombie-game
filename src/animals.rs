@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{AppState, physics::{Rigidbody, StaticEntity, self}, zombie::{Zombie, is_hindered}, player::Player, GameAssets, entities::EntityHealth};
+use crate::{AppState, physics::{Rigidbody, StaticEntity, self}, zombie::{Zombie, is_hindered, Attackable, TargetPriority}, player::Player, GameAssets, entities::{EntityHealth, self}};
 
 const ANIMAL_SPEED: f32 = 40.0;
-const ANIMAL_ACC: f32 = 400.0;
+const ANIMAL_ACC: f32 = 200.0;
 const STROLL_TIME: f32 = 1.0;
 const REACT_DISTANCE: f32 = 60.0;
 
@@ -43,7 +43,9 @@ impl Default for Animal
 impl Plugin for AnimalsPlugin
 {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_update(AppState::InGame).with_system(animal_behaviour));
+        app.add_system_set(SystemSet::on_update(AppState::InGame)
+        .with_system(animal_behaviour)
+        .with_system(entities::mutual_repulsion::<Animal>));
     }
 }
 
@@ -57,7 +59,7 @@ fn animal_behaviour(
 
     'outer: for (anim_trans, mut anim_rb, mut animal) in animal_query.iter_mut() {
         for hostile_trans in hostile_query.iter() {
-            let vec_away: Vec3 = (anim_trans.translation - hostile_trans.translation);
+            let vec_away: Vec3 = anim_trans.translation - hostile_trans.translation;
             if vec_away.length() < REACT_DISTANCE {
                 if !is_hindered(&static_vec_trans, &anim_trans, &hostile_trans) {
                     anim_rb.acc_clamped(vec_away.normalize(), ANIMAL_ACC, ANIMAL_SPEED, &time);
@@ -67,7 +69,7 @@ fn animal_behaviour(
             }
         }
 
-        if !animal.stroll_timer.just_finished() {
+        if !animal.stroll_timer.tick(time.delta()).just_finished() {
             anim_rb.acc_clamped(animal.stroll_direction, ANIMAL_ACC, ANIMAL_SPEED/4.0, &time);
         } else {
             animal.set_random_stroll();
@@ -80,11 +82,13 @@ pub fn spawn_animal(
     spawn_pos: Vec3,
     game_assets: &Res<GameAssets>
 ) {
+    let mut rng = rand::thread_rng();
+
     (*commands)
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: game_assets.texture_atlas.clone(),
             sprite: TextureAtlasSprite {
-                index: 21,
+                index: 21 + rng.gen_range(0..2),
                 ..Default::default()
             },
             ..Default::default()
@@ -104,6 +108,7 @@ pub fn spawn_animal(
         .insert(physics::BoxCollider {
             size: Vec2::new(10.0, 10.0)
         })
+        .insert(Attackable(TargetPriority::High))
         .insert(EntityHealth{val: 20.0, func_destruct: animal_destruct});
 }
 

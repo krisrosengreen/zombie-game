@@ -1,7 +1,7 @@
 use bevy::{prelude::*};
 use rand::prelude::*;
 
-use crate::{physics::{self, Rigidbody}, angle_between, player::{self}, dist_between, AppState, GameAssets, entities::{self, TempEntity, EntityHealth}};
+use crate::{physics::{self}, angle_between, player::{self}, dist_between, AppState, GameAssets, entities::{self, TempEntity, EntityHealth}};
 use std::f32::consts::PI;
 
 pub struct ZombiePlugin;
@@ -14,9 +14,6 @@ const ATTACK_DMG: f32 = 10.0;
 const START_DIST: f32 = 900.0;
 const ATTACK_TIME: f32 = 0.3;
 const INIT_TARGET_RAD: f32 = 30.0;
-
-const ENTITY_DIST_REPULSION: f32 = 20.0;
-const REPULSION_ACC: f32 = 200.0;
 
 #[derive(Component)]
 pub struct Zombie;
@@ -65,7 +62,7 @@ impl Plugin for ZombiePlugin
             .with_system(attack_health_entities)
             .with_system(enemy_pathfind)
             .with_system(enemy_entity_pathfind)
-            .with_system(mutual_repulsion::<Zombie>)
+            .with_system(entities::mutual_repulsion::<Zombie>)
             .with_system(random_new_target));
     }
 }
@@ -342,27 +339,6 @@ fn zombie_destruct(
     spawn_dead(commands, parent_trans, game_assets);
 }
 
-fn mutual_repulsion<ENTITYTYPE: Component>(
-    mut query: Query<(&Transform, &mut Rigidbody), With<ENTITYTYPE>>,
-    time: Res<Time>  
-) {
-    let all_pos: Vec<Vec3> = query.iter().map(|q| q.0.translation).collect();
-
-    for (ent_trans, mut rb) in query.iter_mut() {
-        for pos in all_pos.iter() {
-            if ent_trans.translation == *pos {
-                continue;
-            }
-
-            let vec_from = ent_trans.translation - *pos;
-
-            if vec_from.length() <= ENTITY_DIST_REPULSION {
-                rb.vx += vec_from.normalize().x*REPULSION_ACC*time.delta_seconds();
-                rb.vy += vec_from.normalize().y*REPULSION_ACC*time.delta_seconds();
-            }
-        }
-    }
-}
 
 fn random_new_target(
     mut query: Query<(&Transform, &mut NewTargetTimer, &mut Pathfinder)>,
@@ -389,6 +365,10 @@ fn spawn_dead(
     game_assets: &Res<GameAssets>
 )
 {
+
+    let mut cloned = spawn_trans.clone();
+    cloned.translation.z -= 1.0;
+
     (*commands)
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: game_assets.texture_atlas.clone(),
@@ -399,7 +379,7 @@ fn spawn_dead(
             ..Default::default()
         })
         .insert_bundle(TransformBundle{
-            local: spawn_trans.clone(),
+            local: cloned,
             ..Default::default()
         })
         .insert(entities::TempZombieDead::new());

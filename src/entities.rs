@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{AppState, player::{self}, GameAssets};
+use crate::{AppState, player::{self}, GameAssets, physics::Rigidbody};
+
+const ENTITY_DIST_REPULSION: f32 = 20.0;
+const REPULSION_ACC: f32 = 200.0;
 
 #[derive(Component)]
 pub struct EntityHealth {
@@ -111,6 +114,28 @@ pub fn temp_turret_handler(
 
         if temp_entity.0.just_finished() {
             temp_entity.destruct(entity, &mut commands);
+        }
+    }
+}
+
+pub fn mutual_repulsion<ENTITYTYPE: Component>(
+    mut query: Query<(&Transform, &mut Rigidbody), With<ENTITYTYPE>>,
+    time: Res<Time>  
+) {
+    let all_pos: Vec<Vec3> = query.iter().map(|q| q.0.translation).collect();
+
+    for (ent_trans, mut rb) in query.iter_mut() {
+        for pos in all_pos.iter() {
+            if ent_trans.translation == *pos {
+                continue;
+            }
+
+            let vec_from = ent_trans.translation - *pos;
+
+            if vec_from.length() <= ENTITY_DIST_REPULSION {
+                rb.vx += vec_from.normalize().x*REPULSION_ACC*time.delta_seconds();
+                rb.vy += vec_from.normalize().y*REPULSION_ACC*time.delta_seconds();
+            }
         }
     }
 }
