@@ -2,6 +2,9 @@ use bevy::prelude::*;
 
 use crate::{GameAssets, AppState, zombie, zombie::TargetPriority, entities::EntityHealth, physics::{StaticEntity, BoxCollider}};
 
+const ROT_SPEED: f32 = 1.5*3.14;
+pub const POWER_RADIUS: f32 = 80.0;
+
 #[derive(Component)]
 pub struct WindMill;
 
@@ -24,9 +27,9 @@ pub fn windmill_behaviour(
     time: Res<Time>
 ) {
     for mut millblade_trans in millblade_query.iter_mut() {
-        let axis = Vec3::new(0.0,0.0,1.0);
+        let axis = Vec3::new(0.0,0.0,-1.0);
 
-        millblade_trans.rotate_local_axis(axis, 0.1);
+        millblade_trans.rotate_local_axis(axis, ROT_SPEED*time.delta_seconds());
     }
 }
 

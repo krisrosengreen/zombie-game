@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::fence::spawn_fence;
 use crate::tripmine::spawn_tripmine;
-use crate::{MouseLoc, AppState, GameAssets};
+use crate::{MouseLoc, AppState, GameAssets, woodfence};
 use crate::player::Player;
 use crate::{wall, turret, wheat, windmill};
 
@@ -32,7 +32,8 @@ pub enum SelectionTypes
     TripMine,
     Fence,
     Wheat,
-    WindMill
+    WindMill,
+    WoodFence
 }
 
 fn build(
@@ -81,6 +82,8 @@ fn build(
             wheat::spawn_wheat(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
         } else if block.block == SelectionTypes::WindMill {
             windmill::spawn_windmill(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
+        } else if block.block == SelectionTypes::WoodFence {
+            woodfence::spawn_woodfence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
         }
     }
 }

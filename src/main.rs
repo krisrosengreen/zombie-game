@@ -13,6 +13,7 @@ mod tripmine;
 mod fence;
 mod wheat;
 mod windmill;
+mod woodfence;
 
 use bevy::{prelude::*, render::camera::RenderTarget}; 
 
@@ -143,6 +144,10 @@ fn keyboard_actions(
     if input.pressed(KeyCode::Key6)
     {
         block.block = construct::SelectionTypes::WindMill;
+    }
+
+    if input.pressed(KeyCode::Key7) {
+        block.block = construct::SelectionTypes::WoodFence;
     }
 
     if input.pressed(KeyCode::R)

@@ -3,7 +3,7 @@ use rand::prelude::*;
 
 use crate::{AppState, GameAssets, physics::{StaticEntity, BoxCollider}, zombie, entities::EntityHealth};
 
-const NUM_TREES: u8 = 20;
+const NUM_TREES: u8 = 50;
 
 #[derive(Component)]
 pub struct Tree;

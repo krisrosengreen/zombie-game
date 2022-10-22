@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{physics::{StaticEntity}, angle_between, zombie::{Zombie, self, Pathfinder}, weapons::{self, BLLT_RANDOM}, AppState, GameAssets, entities::{EntityHealth, TempTurretDestroyed, TempEntity}};
+use crate::{physics::{StaticEntity}, angle_between, zombie::{Zombie, self, Pathfinder}, weapons::{self, BLLT_RANDOM}, AppState, GameAssets, entities::{EntityHealth, TempTurretDestroyed, TempEntity}, windmill::{WindMill, POWER_RADIUS}};
 
 #[derive(Component)]
 pub struct Turret;
@@ -73,46 +73,51 @@ pub fn turret_targeting(
     mut turret_query: Query<(&Transform, &mut TurretShootTimer, &mut TurretCoolTimer, &mut TurretBulletTimer), (With<Turret>, Without<Zombie>)>,
     zombie_query: Query<&Transform, (With<Zombie>, Without<Turret>)>,
     static_query: Query<&Transform, (With<StaticEntity>, Without<Pathfinder>)>,
+    power_query: Query<&Transform, With<WindMill>>,
     time: Res<Time>,
     mut commands: Commands
 ) {
     let static_vec: Vec<&Transform> = static_query.iter().collect();
 
     for (turret, mut t_shoot, mut t_cool, mut t_bullet) in turret_query.iter_mut() {
-        let mut target_shoot: Vec3 = Vec3::ZERO;
-        let mut shoot: bool = false;
+        for power_trans in power_query.iter() {
+            if (turret.translation - power_trans.translation).length() < POWER_RADIUS {
+                let mut target_shoot: Vec3 = Vec3::ZERO;
+                let mut shoot: bool = false;
 
-        for zombie in zombie_query.iter() {
+                for zombie in zombie_query.iter() {
 
-            if (turret.translation - zombie.translation).length() > 150.0 {
-                continue;
-            }
- 
-            if !zombie::is_hindered(&static_vec, &turret, &zombie) {
-                target_shoot = zombie.translation;
-                shoot = true;
-            }
-        }
-
-        if !t_cool.0.just_finished() {
-            t_cool.0.tick(time.delta());
-        } else {
-            if shoot {
-                if t_shoot.0.tick(time.delta()).just_finished() {
-                    t_cool.0.tick(time.delta());
+                    if (turret.translation - zombie.translation).length() > 150.0 {
+                        continue;
+                    }
+        
+                    if !zombie::is_hindered(&static_vec, &turret, &zombie) {
+                        target_shoot = zombie.translation;
+                        shoot = true;
+                    }
                 }
 
-                if t_bullet.0.tick(time.delta()).just_finished() {
+                if !t_cool.0.just_finished() {
+                    t_cool.0.tick(time.delta());
+                } else {
+                    if shoot {
+                        if t_shoot.0.tick(time.delta()).just_finished() {
+                            t_cool.0.tick(time.delta());
+                        }
 
-                    // Target zombie and shoot!
+                        if t_bullet.0.tick(time.delta()).just_finished() {
 
-                    let angle = angle_between(turret.translation, target_shoot);
+                            // Target zombie and shoot!
 
-                    let mut rng = rand::thread_rng();
-                    let rand_angle: f32 = (rng.gen::<f32>() - 0.5) * 7.0 * BLLT_RANDOM;
+                            let angle = angle_between(turret.translation, target_shoot);
 
-                    weapons::spawn_bullet(&mut commands, turret.translation, angle, rand_angle);
+                            let mut rng = rand::thread_rng();
+                            let rand_angle: f32 = (rng.gen::<f32>() - 0.5) * 7.0 * BLLT_RANDOM;
 
+                            weapons::spawn_bullet(&mut commands, turret.translation, angle, rand_angle);
+
+                        }
+                    }
                 }
             }
         }
