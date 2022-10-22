@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 use rand::prelude::*;
 
-use crate::{AppState, GameAssets, physics::{StaticEntity, BoxCollider}, zombie, entities::EntityHealth};
+use crate::{AppState, GameAssets, physics::{StaticEntity, BoxCollider}, zombie, entities::EntityHealth, animals};
 
 const NUM_TREES: u8 = 50;
+
+const NUM_ANIMALS: u8 = 10;
 
 #[derive(Component)]
 pub struct Tree;
@@ -58,6 +60,15 @@ fn spawn_environment(
         let ytile = rng.gen_range(-20..20);
 
         spawn_tree(&mut commands, Vec3::new((xtile as f32)*20.0, (ytile as f32)*20.0, 3.0), &game_assets);
+    }
+
+    // Spawn animals
+
+    for _ in 0..NUM_ANIMALS {
+        let xtile = rng.gen_range(-20..20);
+        let ytile = rng.gen_range(-20..20);
+
+        animals::spawn_animal(&mut commands, Vec3::new((xtile as f32)*20.0, (ytile as f32)*20.0, 3.0), &game_assets);
     }
 
 }

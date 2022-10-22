@@ -39,6 +39,18 @@ pub struct Rigidbody
 #[derive(Component)]
 pub struct StaticEntity;
 
+impl Rigidbody
+{
+    pub fn acc_clamped(&mut self, direction: Vec3, acc: f32, clamped_speed: f32, time: &Res<Time>)
+    {
+        self.vx += direction.x * acc * time.delta_seconds();
+        self.vx = self.vx.clamp(-clamped_speed, clamped_speed);
+        
+        self.vy += direction.y * acc * time.delta_seconds();
+        self.vy = self.vy.clamp(-clamped_speed, clamped_speed);
+    }
+}
+
 pub fn apply_velocity(
     mut entity_query: Query<(&mut Transform, &mut Rigidbody), With<Rigidbody>>,
     time: Res<Time>

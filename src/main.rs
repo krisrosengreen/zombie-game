@@ -14,6 +14,7 @@ mod fence;
 mod wheat;
 mod windmill;
 mod woodfence;
+mod animals;
 
 use bevy::{prelude::*, render::camera::RenderTarget}; 
 
@@ -64,6 +65,7 @@ fn main() {
     .add_plugin(fence::FencePlugin)
     .add_plugin(wheat::WheatPlugin)
     .add_plugin(windmill::WindMillPlugin)
+    .add_plugin(animals::AnimalsPlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
         .with_system(keyboard_actions)
