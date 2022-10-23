@@ -1,7 +1,5 @@
-use bevy::{prelude::*};
-use rand::prelude::*;
+use crate::prelude::*;
 
-use crate::{physics::{self}, angle_between, player::{self}, dist_between, AppState, GameAssets, entities::{self, TempEntity, EntityHealth}};
 use std::f32::consts::PI;
 
 pub struct ZombiePlugin;
@@ -14,39 +12,6 @@ const ATTACK_DMG: f32 = 10.0;
 const START_DIST: f32 = 900.0;
 const ATTACK_TIME: f32 = 0.3;
 const INIT_TARGET_RAD: f32 = 30.0;
-
-#[derive(Component)]
-pub struct Zombie;
-
-#[derive(Component)]
-pub struct NewTargetTimer(pub Timer);
-
-#[derive(Component)]
-pub struct Attackable(pub TargetPriority);
-
-#[derive(Component)]
-struct ZombieAttackTimer(Timer);
-
-#[derive(Clone)]
-pub enum TargetPriority {
-    High = 3,
-    Medium = 2,
-    Low = 1
-}
-
-#[derive(Component)]
-pub struct Pathfinder
-{
-    pub target: Vec3,
-    pub target_entity: bool,
-    pub target_priority: TargetPriority
-}
-
-struct ZombieTimer(Timer);
-
-struct ZombieTimeoutTimer(Timer);
-
-struct ZombieLevelTimer(Timer);
 
 impl Plugin for ZombiePlugin
 {
@@ -68,7 +33,7 @@ impl Plugin for ZombiePlugin
 }
 
 pub fn zombie_ai(
-    mut query: Query<(&Transform, &mut physics::Rigidbody, &Pathfinder), With<Zombie>>,
+    mut query: Query<(&Transform, &mut Rigidbody, &Pathfinder), With<Zombie>>,
     time: Res<Time>
 ) {
     for (zombie, mut rb, pf) in query.iter_mut() {
@@ -137,8 +102,8 @@ fn attack_health_entities(
 
 fn enemy_pathfind(
     mut query: Query<(&Transform, &mut Pathfinder), With<Pathfinder>>,
-    static_query: Query<&Transform, (With<physics::StaticEntity>, Without<Pathfinder>)>,
-    player_query: Query<&Transform, (With<player::Player>, Without<physics::StaticEntity>, Without<Pathfinder>)>
+    static_query: Query<&Transform, (With<StaticEntity>, Without<Pathfinder>)>,
+    player_query: Query<&Transform, (With<Player>, Without<StaticEntity>, Without<Pathfinder>)>
 ) {
     let player = player_query.single();
 
@@ -184,8 +149,8 @@ fn enemy_pathfind(
 
 fn enemy_entity_pathfind(
     mut query: Query<(&Transform, &mut Pathfinder), With<Pathfinder>>,
-    static_query: Query<&Transform, (With<physics::StaticEntity>, Without<Pathfinder>)>,
-    ent_att: Query<(&Transform, &Attackable), (With<Attackable>, Without<physics::StaticEntity>, Without<Pathfinder>)>
+    static_query: Query<&Transform, (With<StaticEntity>, Without<Pathfinder>)>,
+    ent_att: Query<(&Transform, &Attackable), (With<Attackable>, Without<StaticEntity>, Without<Pathfinder>)>
 ) {
     for (enm_trans, mut enm_pf) in query.iter_mut() {
 
@@ -266,7 +231,7 @@ fn spawn_zombie(
             local: Transform::from_translation(spawn_pos),
             ..Default::default()
         })
-        .insert(physics::Rigidbody{
+        .insert(Rigidbody{
             vx: 0.0,
             vy: 0.0,
             friction: true
@@ -278,7 +243,7 @@ fn spawn_zombie(
             target_entity: false
         })
         .insert(ZombieAttackTimer(Timer::from_seconds(ATTACK_TIME, true)))
-        .insert(physics::BoxCollider {
+        .insert(BoxCollider {
             size: Vec2::new(10.0, 10.0)
         })
         .insert(NewTargetTimer(Timer::from_seconds(5.0, true)))
@@ -309,7 +274,7 @@ fn spawn_chungus_zombie(
             },
             ..Default::default()
         })
-        .insert(physics::Rigidbody{
+        .insert(Rigidbody{
             vx: 0.0,
             vy: 0.0,
             friction: true
@@ -321,7 +286,7 @@ fn spawn_chungus_zombie(
             target_entity: false
         })
         .insert(ZombieAttackTimer(Timer::from_seconds(ATTACK_TIME, true)))
-        .insert(physics::BoxCollider {
+        .insert(BoxCollider {
             size: Vec2::new(30.0, 30.0)
         })
         .insert(NewTargetTimer(Timer::from_seconds(5.0, true)))
@@ -342,7 +307,7 @@ fn zombie_destruct(
 
 fn random_new_target(
     mut query: Query<(&Transform, &mut NewTargetTimer, &mut Pathfinder)>,
-    player_query: Query<&Transform, With<player::Player>>,
+    player_query: Query<&Transform, With<Player>>,
     time: Res<Time>
 ){
     let player = player_query.single();
@@ -382,5 +347,5 @@ fn spawn_dead(
             local: cloned,
             ..Default::default()
         })
-        .insert(entities::TempZombieDead::new());
+        .insert(TempZombieDead::new());
 }

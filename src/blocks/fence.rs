@@ -1,10 +1,8 @@
-use bevy::prelude::*;
+use crate::prelude::*;
 
 const FENCE_SPEED: f32 = 3.0;
 
 pub struct FencePlugin;
-
-use crate::{AppState, entities::EntityHealth, GameAssets, physics::{Rigidbody}, weapons::Bullet};
 
 impl Plugin for FencePlugin
 {
@@ -14,9 +12,6 @@ impl Plugin for FencePlugin
         .with_system(fence_behaviour));
     }
 }
-
-#[derive(Component)]
-pub struct Fence;
 
 pub fn spawn_fence(
     commands: &mut Commands,

@@ -1,7 +1,4 @@
-use bevy::prelude::*;
-use rand::prelude::*;
-
-use crate::{AppState, physics::{Rigidbody, StaticEntity, self}, zombie::{Zombie, is_hindered, Attackable, TargetPriority}, player::Player, GameAssets, entities::{EntityHealth, self}};
+use crate::prelude::*;
 
 const ANIMAL_SPEED: f32 = 40.0;
 const ANIMAL_ACC: f32 = 200.0;
@@ -9,13 +6,6 @@ const STROLL_TIME: f32 = 1.0;
 const REACT_DISTANCE: f32 = 60.0;
 
 pub struct AnimalsPlugin;
-
-#[derive(Component)]
-pub struct Animal
-{
-    stroll_timer: Timer,
-    stroll_direction: Vec3
-}
 
 impl Animal
 {
@@ -97,7 +87,7 @@ pub fn spawn_animal(
             local: Transform::from_translation(spawn_pos),
             ..Default::default()
         })
-        .insert(physics::Rigidbody{
+        .insert(Rigidbody{
             vx: 0.0,
             vy: 0.0,
             friction: true
@@ -105,7 +95,7 @@ pub fn spawn_animal(
         .insert(Animal {
             ..Default::default()
         })
-        .insert(physics::BoxCollider {
+        .insert(BoxCollider {
             size: Vec2::new(10.0, 10.0)
         })
         .insert(Attackable(TargetPriority::High))

@@ -1,17 +1,7 @@
-use bevy::prelude::*;
-
-use crate::{GameAssets, AppState, zombie, zombie::TargetPriority, entities::EntityHealth};
+use crate::prelude::*;
 
 const TIME_STATE_CHANGE: f32 = 45.0;
 
-#[derive(Component)]
-pub struct Wheat
-{
-    state: u8,
-    timer: Timer
-}
-
-#[derive(Clone)]
 pub struct WheatPlugin;
 
 impl Plugin for WheatPlugin
@@ -56,7 +46,7 @@ pub fn spawn_wheat(
             local: parent_trans.clone(),
             ..Default::default()
         })
-        .insert(zombie::Attackable(TargetPriority::Low))
+        .insert(Attackable(TargetPriority::Low))
         .insert(EntityHealth {
             val: 1.0,
             func_destruct: wheat_destruct

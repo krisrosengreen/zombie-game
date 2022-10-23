@@ -1,13 +1,8 @@
-use bevy::{prelude::*, sprite::Anchor};
+use bevy::sprite::Anchor;
 
-use crate::AppState;
+use crate::prelude::*;
 
 pub struct InventoryPlugin;
-
-pub struct InventoryAsset
-{
-    pub texture: Handle<TextureAtlas>
-}
 
 impl Plugin for InventoryPlugin
 {
@@ -23,9 +18,6 @@ impl Plugin for InventoryPlugin
             .with_system(inventory_destruct));
     }
 }
-
-#[derive(Component)]
-pub struct Inventory;
 
 pub fn inventory_init(
     mut commands: Commands,

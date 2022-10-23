@@ -1,19 +1,8 @@
-use bevy::prelude::*;
-
-use crate::fence::spawn_fence;
-use crate::tripmine::spawn_tripmine;
-use crate::{MouseLoc, AppState, GameAssets, woodfence};
-use crate::player::Player;
-use crate::{wall, turret, wheat, windmill};
+use crate::prelude::*;
 
 const MAX_CONSTRUCT_DIST: f32 = 50.0;
 
 pub struct ConstructionPlugin;
-
-pub struct BlockSelection
-{
-    pub block: SelectionTypes
-}
 
 impl Plugin for ConstructionPlugin
 {
@@ -22,18 +11,6 @@ impl Plugin for ConstructionPlugin
         app.add_system_set(SystemSet::on_update(AppState::InGame)
             .with_system(build));
     }
-}
-
-#[derive(PartialEq, Eq)]
-pub enum SelectionTypes
-{
-    WallBlock,
-    TurretBlock,
-    TripMine,
-    Fence,
-    Wheat,
-    WindMill,
-    WoodFence
 }
 
 fn build(
@@ -75,9 +52,9 @@ fn build(
         } else if block.block == SelectionTypes::TurretBlock {
             turret::spawn_turret(&mut commands, spawn_pos, &game_assets);
         } else if block.block == SelectionTypes::TripMine {
-            spawn_tripmine(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
+            tripmine::spawn_tripmine(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
         } else if block.block == SelectionTypes::Fence {
-            spawn_fence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
+            fence::spawn_fence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
         } else if block.block == SelectionTypes::Wheat {
             wheat::spawn_wheat(&mut commands, &game_assets, &Transform::from_translation(spawn_pos));
         } else if block.block == SelectionTypes::WindMill {

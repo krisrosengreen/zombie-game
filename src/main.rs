@@ -1,76 +1,56 @@
-mod wall;
-mod physics;
-mod turret;
-mod zombie;
 mod player;
-mod weapons;
-mod construct;
-mod main_menu;
-mod inventory;
+mod systems;
+mod gameui;
 mod entities;
-mod environment;
-mod tripmine;
-mod fence;
-mod wheat;
-mod windmill;
-mod woodfence;
-mod animals;
+mod blocks;
+mod components;
+mod resources;
+mod utils;
 
-use bevy::{prelude::*, render::camera::RenderTarget}; 
-
-// Altered TextureAtlasSprite to make sprite centered
-
-#[derive(Component)]
-struct MainCamera;
-
-#[derive(Component)]
-struct TextScoreboard;
-
-struct MouseLoc
-{
-    x: f32,
-    y: f32
+mod prelude {
+    pub use bevy::prelude::*;
+    pub use rand::*;
+    pub use crate::player::*;
+    pub use crate::gameui::*;
+    pub use crate::systems::*;
+    pub use crate::entities::*;
+    pub use crate::blocks::*;
+    pub use crate::components::*;
+    pub use crate::resources::*;
+    pub use crate::utils::angle_between;
+    pub use crate::utils::dist_between;
+    pub use crate::utils::my_cursor_system;
 }
 
-pub struct GameAssets
-{
-    pub texture_atlas: Handle<TextureAtlas>
-}
+use prelude::*;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub enum AppState {
-    MainMenu,
-    GameSetup,
-    InGame,
-    Inventory,
-    GameDestruct,
-    _Paused,
-}
+pub const MOVESPEED: f32 = 40.0;
+pub const PLAYER_ACC: f32 = 600.0;
 
 fn main() {
     App::new()
     .add_startup_system(setup)
     .add_plugins(DefaultPlugins)
     .insert_resource(MouseLoc{x: 0.0, y: 0.0})
-    .insert_resource(construct::BlockSelection{block: construct::SelectionTypes::WallBlock})
-    .add_event::<physics::CollisionEvent>()
+    .insert_resource(BlockSelection{block: SelectionTypes::WallBlock})
+    .add_event::<CollisionEvent>()
     .add_state(AppState::MainMenu)
-    .add_plugin(weapons::WeaponsPlugin)
-    .add_plugin(player::PlayerPlugin)
-    .add_plugin(zombie::ZombiePlugin)
-    .add_plugin(turret::TurretPlugin)
-    .add_plugin(wall::WallPlugin)
-    .add_plugin(physics::PhysicsPlugin)
-    .add_plugin(construct::ConstructionPlugin)
-    .add_plugin(main_menu::MainMenuPlugin)
-    .add_plugin(inventory::InventoryPlugin)
-    .add_plugin(entities::EntitiesPlugin)
-    .add_plugin(environment::EnvironmentPlugin)
-    .add_plugin(tripmine::TripMinePlugin)
-    .add_plugin(fence::FencePlugin)
-    .add_plugin(wheat::WheatPlugin)
-    .add_plugin(windmill::WindMillPlugin)
-    .add_plugin(animals::AnimalsPlugin)
+    .add_plugin(WeaponsPlugin)
+    .add_plugin(PlayerPlugin)
+    .add_plugin(ZombiePlugin)
+    .add_plugin(TurretPlugin)
+    .add_plugin(WallPlugin)
+    .add_plugin(PhysicsPlugin)
+    .add_plugin(ConstructionPlugin)
+    .add_plugin(MainMenuPlugin)
+    .add_plugin(InventoryPlugin)
+    .add_plugin(EntitiesPlugin)
+    .add_plugin(EnvironmentPlugin)
+    .add_plugin(TripMinePlugin)
+    .add_plugin(FencePlugin)
+    .add_plugin(WheatPlugin)
+    .add_plugin(WindMillPlugin)
+    .add_plugin(AnimalsPlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
         .with_system(keyboard_actions)
@@ -104,15 +84,15 @@ fn setup(
 
     let inventory_handle = texture_atlases.add(texture_atlas_inventory);
 
-    commands.insert_resource(inventory::InventoryAsset {
+    commands.insert_resource(InventoryAsset {
         texture: inventory_handle
     });
 }
 
 fn keyboard_actions(
-    mut query_rb: Query<&mut physics::Rigidbody, With<player::Player>>,
-    mut block: ResMut<construct::BlockSelection>,
-    mut magazine: Query<&mut weapons::Magazine>,
+    mut query_rb: Query<&mut Rigidbody, With<Player>>,
+    mut block: ResMut<BlockSelection>,
+    mut magazine: Query<&mut Magazine>,
     mut state: ResMut<State<AppState>>,
     mut input: ResMut<Input<KeyCode>>,
     time: Res<Time>
@@ -120,50 +100,50 @@ fn keyboard_actions(
     let mut rb = query_rb.single_mut();
 
     if input.pressed(KeyCode::D) {
-        rb.vx += player::PLAYER_ACC*time.delta_seconds();
+        rb.vx += PLAYER_ACC*time.delta_seconds();
     }
 
     if input.pressed(KeyCode::A) {
-        rb.vx += -player::PLAYER_ACC*time.delta_seconds();
+        rb.vx += -PLAYER_ACC*time.delta_seconds();
     }
 
     if input.pressed(KeyCode::W) {
-        rb.vy += player::PLAYER_ACC*time.delta_seconds();
+        rb.vy += PLAYER_ACC*time.delta_seconds();
     }
 
     if input.pressed(KeyCode::S) {
-        rb.vy += -player::PLAYER_ACC*time.delta_seconds();
+        rb.vy += -PLAYER_ACC*time.delta_seconds();
     }
 
     if input.pressed(KeyCode::Key1)
     {
-        block.block = construct::SelectionTypes::WallBlock;
+        block.block = SelectionTypes::WallBlock;
     }
 
     if input.pressed(KeyCode::Key2)
     {
-        block.block = construct::SelectionTypes::TurretBlock;
+        block.block = SelectionTypes::TurretBlock;
     }
 
     if input.pressed(KeyCode::Key3) {
-        block.block = construct::SelectionTypes::TripMine;
+        block.block = SelectionTypes::TripMine;
     }
 
     if input.pressed(KeyCode::Key4) {
-        block.block = construct::SelectionTypes::Fence;
+        block.block = SelectionTypes::Fence;
     }
 
     if input.pressed(KeyCode::Key5) {
-        block.block = construct::SelectionTypes::Wheat;
+        block.block = SelectionTypes::Wheat;
     }
 
     if input.pressed(KeyCode::Key6)
     {
-        block.block = construct::SelectionTypes::WindMill;
+        block.block = SelectionTypes::WindMill;
     }
 
     if input.pressed(KeyCode::Key7) {
-        block.block = construct::SelectionTypes::WoodFence;
+        block.block = SelectionTypes::WoodFence;
     }
 
     if input.pressed(KeyCode::R)
@@ -177,50 +157,7 @@ fn keyboard_actions(
         state.set(AppState::Inventory).unwrap();
     }
 
-    rb.vx = rb.vx.clamp(-player::MOVESPEED, player::MOVESPEED);
-    rb.vy = rb.vy.clamp(-player::MOVESPEED, player::MOVESPEED);
+    rb.vx = rb.vx.clamp(-MOVESPEED, MOVESPEED);
+    rb.vy = rb.vy.clamp(-MOVESPEED, MOVESPEED);
 
-}
-
-fn my_cursor_system(
-    wnds: Res<Windows>,
-    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    mut mouse: ResMut<MouseLoc>
-) {
-    let (camera, camera_transform) = q_camera.single();
-
-    let wnd = if let RenderTarget::Window(id) = camera.target {
-        wnds.get(id).unwrap()
-    } else {
-        wnds.get_primary().unwrap()
-    };
-
-    if let Some(screen_pos) = wnd.cursor_position() {
-        // get the size of the window
-        let window_size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
-
-        // convert screen position [0..resolution] to ndc [-1..1] (gpu coordinates)
-        let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
-
-        // matrix for undoing the projection and camera transform
-        let ndc_to_world = camera_transform.compute_matrix() * camera.projection_matrix().inverse();
-
-        // use it to convert ndc to world-space coordinates
-        let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
-
-        // reduce it to a 2D value
-        let world_pos: Vec2 = world_pos.truncate();
-
-        mouse.x = world_pos.x;
-        mouse.y = world_pos.y;
-    }
-    
-}
-
-pub fn angle_between(a: Vec3, b: Vec3) -> f32{
-    (b.y - a.y).atan2(b.x - a.x)
-}
-
-fn dist_between(a: Vec3, b: Vec3) -> f32 {
-    ((b.y - a.y).powf(2.0) + (b.x - a.x).powf(2.0)).sqrt()
 }

@@ -1,14 +1,8 @@
-use bevy::prelude::*;
-use rand::prelude::*;
-
-use crate::{AppState, GameAssets, physics::{StaticEntity, BoxCollider}, zombie, entities::EntityHealth, animals};
+use crate::prelude::*;
 
 const NUM_TREES: u8 = 50;
 
 const NUM_ANIMALS: u8 = 25;
-
-#[derive(Component)]
-pub struct Tree;
 
 pub struct EnvironmentPlugin;
 
@@ -94,7 +88,7 @@ fn spawn_tree(
             ..Default::default()
         })
         .insert(StaticEntity)
-        .insert(zombie::Attackable(zombie::TargetPriority::Low))
+        .insert(Attackable(TargetPriority::Low))
         .insert(EntityHealth{val: 200.0, func_destruct: tree_destruct})
         .insert(BoxCollider {
             size: Vec2::new(20.0, 20.0)

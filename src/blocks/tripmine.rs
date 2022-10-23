@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use crate::prelude::*;
 
 const TRIGGER_DIST: f32 = 20.0;
 const BLAST_RADIUS: f32 = 100.0;
@@ -7,8 +7,6 @@ const EXPLOSION_DMG_PER_FRAME: f32 = 200.0;
 const EXPLOSION_TIME: f32 = 0.5;
 
 pub struct TripMinePlugin;
-
-use crate::{zombie::{Zombie}, AppState, entities::EntityHealth, GameAssets, physics::{StaticEntity}};
 
 impl Plugin for TripMinePlugin
 {
@@ -19,12 +17,6 @@ impl Plugin for TripMinePlugin
         .with_system(explosion_behaviour));
     }
 }
-
-#[derive(Component)]
-pub struct TripMine;
-
-#[derive(Component)]
-pub struct Explosion(pub Timer);
 
 fn tripmine_detonator(
     mut commands: Commands,

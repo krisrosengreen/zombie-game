@@ -1,14 +1,6 @@
-use bevy::{prelude::*, sprite::Anchor};
-use crate::{physics::{self, BoxCollider}, weapons, zombie, GameAssets, AppState, entities::EntityHealth};
+use bevy::sprite::Anchor;
 
-pub const MOVESPEED: f32 = 40.0;
-pub const PLAYER_ACC: f32 = 600.0;
-
-#[derive(Component)]
-pub(crate) struct Player;
-
-#[derive(Component)]
-pub(crate) struct HealthBar;
+use crate::prelude::*;
 
 pub struct PlayerPlugin;
 
@@ -42,14 +34,14 @@ fn player_setup(
             ..Default::default()
         })
         .insert(Player)
-        .insert(physics::Rigidbody {
+        .insert(Rigidbody {
             vx: 0.0,
             vy: 0.0,
             friction: true
         })
-        .insert(weapons::ReloadTimer(Timer::from_seconds(2.0, true)))
-        .insert(weapons::Magazine(weapons::MAGAZINE_SIZE))
-        .insert(zombie::Attackable(zombie::TargetPriority::High))
+        .insert(ReloadTimer(Timer::from_seconds(2.0, true)))
+        .insert(Magazine(weapons::MAGAZINE_SIZE))
+        .insert(Attackable(TargetPriority::High))
         .insert(BoxCollider {
             size: Vec2::new(10.0, 10.0)
         })

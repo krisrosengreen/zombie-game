@@ -1,11 +1,6 @@
-use bevy::{prelude::*};
-
-use crate::AppState;
+use crate::prelude::*;
 
 pub struct MainMenuPlugin;
-
-#[derive(Component)]
-struct UiText;
 
 impl Plugin for MainMenuPlugin
 {

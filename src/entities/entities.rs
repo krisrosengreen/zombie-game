@@ -1,15 +1,7 @@
-use bevy::prelude::*;
-
-use crate::{AppState, player::{self}, GameAssets, physics::Rigidbody};
+use crate::prelude::*;
 
 const ENTITY_DIST_REPULSION: f32 = 20.0;
 const REPULSION_ACC: f32 = 200.0;
-
-#[derive(Component)]
-pub struct EntityHealth {
-    pub val: f32,
-    pub func_destruct: fn(&mut Commands, &Entity, &Res<GameAssets>, &Transform),
-}
 
 pub struct EntitiesPlugin;
 
@@ -33,9 +25,6 @@ pub trait TempEntity
     fn destruct(&self, entity: Entity, command: &mut Commands);
 }
 
-#[derive(Component)]
-pub struct TempZombieDead(pub Timer);
-
 impl TempEntity for TempZombieDead
 {
     fn new() -> Self
@@ -53,9 +42,6 @@ impl TempEntity for TempZombieDead
         commands.entity(entity).despawn();
     }
 }
-
-#[derive(Component)]
-pub struct TempTurretDestroyed(pub Timer);
 
 impl TempEntity for TempTurretDestroyed
 {
@@ -77,7 +63,7 @@ impl TempEntity for TempTurretDestroyed
 fn entity_health(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
-    query: Query<(Entity, &EntityHealth, &Transform), Without<player::Player>>
+    query: Query<(Entity, &EntityHealth, &Transform), Without<Player>>
 ) {
     for (entity, health, trans) in query.iter() {
         if health.val <= 0.0 {

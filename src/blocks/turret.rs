@@ -1,26 +1,6 @@
-use bevy::prelude::*;
-use rand::prelude::*;
+use crate::prelude::{*, weapons::BLLT_RANDOM};
 
-use crate::{physics::{StaticEntity}, angle_between, zombie::{Zombie, self, Pathfinder}, weapons::{self, BLLT_RANDOM}, AppState, GameAssets, entities::{EntityHealth, TempTurretDestroyed, TempEntity}, windmill::{WindMill, POWER_RADIUS}};
-
-#[derive(Component)]
-pub struct Turret;
-
-#[derive(Component)]
-pub struct TurretTargeting
-{
-    pub target: Vec3,
-    pub shoot: bool
-}
-
-#[derive(Component)]
-pub struct TurretShootTimer(pub Timer);
-
-#[derive(Component)]
-pub struct TurretCoolTimer(pub Timer);
-
-#[derive(Component)]
-pub struct TurretBulletTimer(pub Timer);
+use super::windmill::POWER_RADIUS;
 
 pub struct TurretPlugin;
 
@@ -66,7 +46,7 @@ pub fn spawn_turret(
         .insert(TurretBulletTimer(Timer::from_seconds(0.5, true)))
         .insert(TurretCoolTimer(Timer::from_seconds(6.0, true)))
         .insert(EntityHealth{val: 300.0, func_destruct: turret_destruct})
-        .insert(zombie::Attackable(zombie::TargetPriority::Medium));
+        .insert(Attackable(TargetPriority::Medium));
 }
 
 pub fn turret_targeting(

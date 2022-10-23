@@ -1,23 +1,9 @@
-use bevy::prelude::*;
-use rand::prelude::*;
-
-use crate::{physics::{self, BoxCollider}, dist_between, MouseLoc, player::{self, Player}, angle_between, AppState, entities::EntityHealth, turret::Turret, fence::Fence, wheat::Wheat};
+use crate::prelude::*;
 
 pub const BLLT_SPEED: f32 = 500.0;
 pub const BLLT_RANDOM: f32 = 0.1;
 pub const MAGAZINE_SIZE: u8 = 30;
 pub const BLLT_DMG: f32 = 33.0;
-
-#[derive(Component)]
-pub struct Bullet;
-
-#[derive(Component)]
-pub struct Magazine(pub u8);
-
-#[derive(Component)]
-pub struct ReloadTimer(pub Timer);
-
-struct GunTimer(Timer);
 
 pub struct WeaponsPlugin;
 
@@ -37,7 +23,7 @@ impl Plugin for WeaponsPlugin
 fn shot_bullets(
     mut query: Query<(Entity, &mut Transform), With<Bullet>>,
     mut commands: Commands,
-    mut event_reader: EventReader<physics::CollisionEvent>,
+    mut event_reader: EventReader<CollisionEvent>,
     mut health_query: Query<(&Transform, &mut EntityHealth), (Without<Bullet>, Without<Player>, Without<Turret>, Without<Fence>, Without<Wheat>)>
 ) {
     let bullet_ents: Vec<Entity> = query.iter().map(|(ent, _trans)| ent).collect();
@@ -72,7 +58,7 @@ fn shoot(
     mut commands: Commands,
     mut gun_timer: ResMut<GunTimer>,
     mouseloc: Res<MouseLoc>,
-    mut query: Query<(&Transform, &mut ReloadTimer, &mut Magazine), With<player::Player>>,
+    mut query: Query<(&Transform, &mut ReloadTimer, &mut Magazine), With<Player>>,
     btn: Res<Input<MouseButton>>,
     time: Res<Time>
 ) {
@@ -123,7 +109,7 @@ pub fn spawn_bullet(
             ..Default::default()
         })
         .insert(Bullet)
-        .insert(physics::Rigidbody{
+        .insert(Rigidbody{
             vx: (angle + rand_angle).cos()*BLLT_SPEED,
             vy: (angle + rand_angle).sin()*BLLT_SPEED,
             friction: false,

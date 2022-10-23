@@ -1,47 +1,42 @@
-use bevy::{prelude::*};
-use crate::{physics::{StaticEntity, BoxCollider}, entities::EntityHealth, zombie, GameAssets};
+use crate::prelude::*;
 
-pub struct WallPlugin;
+pub struct WoodFencePlugin;
 
-impl Plugin for WallPlugin
+impl Plugin for WoodFencePlugin
 {
     fn build(&self, _app: &mut App) {
 
     }
 }
 
-#[derive(Component)]
-pub struct Wall;
-
-pub fn spawn_wall(
+pub fn spawn_woodfence(
     commands: &mut Commands,
-    spawn_pos: Vec3,
-    game_asset: &Res<GameAssets>
+    game_asset: &Res<GameAssets>,
+    spawn_trans: &Transform
 ) {
     (*commands)
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: game_asset.texture_atlas.clone(),
             sprite: TextureAtlasSprite {
-                index: 0,
+                index: 20,
                 custom_size: Some(Vec2 { x: 20.0, y: 20.0 }),
                 ..Default::default()
             },
             ..Default::default()
         })
         .insert_bundle(TransformBundle{
-            local: Transform::from_translation(spawn_pos),
+            local: spawn_trans.clone(),
             ..Default::default()
         })
-        .insert(Wall)
         .insert(StaticEntity)
-        .insert(zombie::Attackable(zombie::TargetPriority::Low))
-        .insert(EntityHealth{val: 400.0, func_destruct: wall_destruct})
+        .insert(Attackable(TargetPriority::Low))
+        .insert(EntityHealth{val: 400.0, func_destruct: woodfence_destruct})
         .insert(BoxCollider {
             size: Vec2::new(20.0, 20.0)
         });
 }
 
-fn wall_destruct(
+fn woodfence_destruct(
     commands: &mut Commands,
     entity: &Entity,
     _game_assets: &Res<GameAssets>,

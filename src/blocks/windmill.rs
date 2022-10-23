@@ -1,17 +1,8 @@
-use bevy::prelude::*;
-
-use crate::{GameAssets, AppState, zombie, zombie::TargetPriority, entities::EntityHealth, physics::{StaticEntity, BoxCollider}};
+use crate::prelude::*;
 
 const ROT_SPEED: f32 = 1.5*3.14;
 pub const POWER_RADIUS: f32 = 80.0;
 
-#[derive(Component)]
-pub struct WindMill;
-
-#[derive(Component)]
-pub struct WindMillBlade;
-
-#[derive(Clone)]
 pub struct WindMillPlugin;
 
 impl Plugin for WindMillPlugin
@@ -71,7 +62,7 @@ pub fn spawn_windmill(
             local: parent_trans.clone(),
             ..Default::default()
         })
-        .insert(zombie::Attackable(TargetPriority::Low))
+        .insert(Attackable(TargetPriority::Low))
         .insert(StaticEntity)
         .insert(BoxCollider {
             size: Vec2 { x: 20.0, y: 20.0 }

@@ -1,10 +1,8 @@
-use bevy::prelude::*;
 use lerp::Lerp;
 
-use crate::AppState;
+use crate::prelude::*;
 
 const DIFFTHRES: f32 = 2.0;
-
 pub struct PhysicsPlugin;
 
 impl Plugin for PhysicsPlugin
@@ -16,28 +14,6 @@ impl Plugin for PhysicsPlugin
             .with_system(entity_collision));
     }
 }
-pub struct CollisionEvent
-{
-    pub ent_a: Entity,
-    pub stat_b: Entity
-}
-
-#[derive(Component)]
-pub struct BoxCollider
-{
-    pub size: Vec2
-}
-
-#[derive(Component)]
-pub struct Rigidbody
-{
-    pub vx: f32,
-    pub vy: f32,
-    pub friction: bool
-}
-
-#[derive(Component)]
-pub struct StaticEntity;
 
 impl Rigidbody
 {
