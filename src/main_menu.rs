@@ -32,6 +32,8 @@ fn setup_main_menu(
 ) {
 
     let font_handle: Handle<Font> = asset_server.load("fonts\\Roboto-Regular.ttf");
+    let game_name: &str = "Apocalypse Farmer";
+    let game_start_msg: &str = "Press space to begin game!";
 
     commands.spawn_bundle(NodeBundle {
         style: Style {
@@ -62,19 +64,19 @@ fn setup_main_menu(
             text: Text {
                 sections: vec![
                     TextSection {
-                        value: "Apocalypse Farmer".to_string(),
+                        value: game_name.to_string(),
                         style: TextStyle {
                             font: font_handle.clone(),
-                            font_size: 100.0,
+                            font_size: 40.0,
                             color: Color::rgb(0.8, 0.1, 0.1)
                         }
                     },
 
                     TextSection {
-                        value: "Press space key to start game!".to_string(),
+                        value: game_start_msg.to_string(),
                         style: TextStyle {
                             font: font_handle.clone(),
-                            font_size: 40.0,
+                            font_size: 12.0,
                             color: Color::rgb(1.0, 1.0, 1.0)
                         }
                     }
