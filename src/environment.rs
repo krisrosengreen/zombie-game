@@ -16,7 +16,7 @@ impl Plugin for EnvironmentPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_system_set(SystemSet::on_enter(AppState::InGame).with_system(spawn_environment));
+        app.add_system_set(SystemSet::on_enter(AppState::GameSetup).with_system(spawn_environment));
     }
 }
 

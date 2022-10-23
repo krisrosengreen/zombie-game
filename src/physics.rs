@@ -146,8 +146,6 @@ pub fn entity_collision(
                     }
                 }
             }
-
-
         }
     }
 }

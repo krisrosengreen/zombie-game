@@ -17,7 +17,7 @@ impl Plugin for PlayerPlugin
     fn build(&self, app: &mut App)
     {
         app
-        .add_system_set(SystemSet::on_enter(AppState::InGame)
+        .add_system_set(SystemSet::on_enter(AppState::GameSetup)
             .with_system(player_setup))
         .add_system_set(SystemSet::on_update(AppState::InGame)
             .with_system(player_health));
@@ -75,7 +75,8 @@ fn player_setup(
 
 fn player_health(
     mut query: Query<&mut Sprite, With<HealthBar>>,
-    player_query: Query<&EntityHealth, With<Player>>
+    player_query: Query<&EntityHealth, With<Player>>,
+    mut state: ResMut<State<AppState>>
 ) {
 
     let mut sprite = query.single_mut();
@@ -83,6 +84,10 @@ fn player_health(
     sprite.custom_size = Some(Vec2 { x: health.val, y: 10.0 });
 
     sprite.color = Color::rgb(1.0 - health.val/100.0, health.val/100.0, 0.0);
+
+    if player_query.single().val <= 0.0 {
+        state.set(AppState::GameDestruct).unwrap();
+    }
 }
 
 fn player_destruct(

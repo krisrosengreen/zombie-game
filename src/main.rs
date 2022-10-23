@@ -38,9 +38,12 @@ pub struct GameAssets
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-enum AppState {
+pub enum AppState {
     MainMenu,
+    GameSetup,
     InGame,
+    Inventory,
+    GameDestruct,
     _Paused,
 }
 
@@ -95,14 +98,23 @@ fn setup(
     });
 
     // Get the texture of the inventory
-    
+    let texture_handle_inventory = asset_server.load("inventory.png");
+    let texture_atlas_inventory = TextureAtlas::from_grid(texture_handle_inventory,
+        Vec2::new(108.0, 66.0), 1, 1);
+
+    let inventory_handle = texture_atlases.add(texture_atlas_inventory);
+
+    commands.insert_resource(inventory::InventoryAsset {
+        texture: inventory_handle
+    });
 }
 
 fn keyboard_actions(
     mut query_rb: Query<&mut physics::Rigidbody, With<player::Player>>,
     mut block: ResMut<construct::BlockSelection>,
     mut magazine: Query<&mut weapons::Magazine>,
-    input: Res<Input<KeyCode>>,
+    mut state: ResMut<State<AppState>>,
+    mut input: ResMut<Input<KeyCode>>,
     time: Res<Time>
 ) {
     let mut rb = query_rb.single_mut();
@@ -158,6 +170,11 @@ fn keyboard_actions(
     {
         let mut magazine = magazine.single_mut();
         magazine.0 = 0;
+    }
+
+    if input.clear_just_pressed(KeyCode::I)
+    {
+        state.set(AppState::Inventory).unwrap();
     }
 
     rb.vx = rb.vx.clamp(-player::MOVESPEED, player::MOVESPEED);
