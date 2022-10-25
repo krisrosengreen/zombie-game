@@ -27,6 +27,7 @@ pub struct InventoryAsset
     pub texture: Handle<TextureAtlas>
 }
 
+#[derive(Clone)]
 pub struct Item
 {
     pub item_type: SelectionTypes,

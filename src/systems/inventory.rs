@@ -62,7 +62,7 @@ pub fn inventory_init(
                     ..Default::default()
                 })
                 .insert_bundle(TransformBundle{
-                    local: Transform::from_xyz((i as f32)*xstep + offx, offy, 30.0),
+                    local: Transform::from_xyz(((i%5) as f32)*xstep + offx, offy - f32::floor((i as f32)/5.0) * ystep, 30.0),
                     ..Default::default()
                 })
                 .insert(InventoryItem);

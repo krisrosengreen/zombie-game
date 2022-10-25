@@ -1,7 +1,6 @@
 use crate::{prelude::*, utils::entity_destruct};
 
 const NUM_TREES: u8 = 50;
-
 const NUM_ANIMALS: u8 = 25;
 
 pub struct EnvironmentPlugin;
@@ -18,7 +17,6 @@ fn spawn_environment(
     mut commands: Commands,
     game_assets: Res<GameAssets>
 ) {
-
     // Spawn grassy background!
     let grass_indeces = [2,3,6,7];
     let mut rng = rand::thread_rng();
@@ -90,6 +88,12 @@ fn spawn_tree(
         .insert(StaticEntity)
         .insert(Attackable(TargetPriority::Low))
         .insert(EntityHealth{val: 200.0, func_destruct: entity_destruct})
+        .insert(DropsItem{
+            item: Item {
+                item_type: SelectionTypes::WallBlock,
+                quantity: 3
+            }
+        })
         .insert(BoxCollider {
             size: Vec2::new(20.0, 20.0)
         });

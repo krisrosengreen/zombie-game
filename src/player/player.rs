@@ -4,6 +4,8 @@ use crate::prelude::*;
 
 pub struct PlayerPlugin;
 
+pub const COLL_DIST: f32 = 10.0;
+
 impl Plugin for PlayerPlugin
 {
     fn build(&self, app: &mut App)
@@ -12,7 +14,8 @@ impl Plugin for PlayerPlugin
         .add_system_set(SystemSet::on_enter(AppState::GameSetup)
             .with_system(player_setup))
         .add_system_set(SystemSet::on_update(AppState::InGame)
-            .with_system(player_health));
+            .with_system(player_health)
+            .with_system(collect_items));
     }
 }
 
@@ -66,6 +69,10 @@ fn player_setup(
                 Item{
                     quantity: 15,
                     item_type: SelectionTypes::WindMill
+                },
+                Item{
+                    quantity: 15,
+                    item_type: SelectionTypes::Wheat
                 }
                 ]
         })
@@ -103,6 +110,21 @@ fn player_health(
 
     if player_query.single().val <= 0.0 {
         state.set(AppState::GameDestruct).unwrap();
+    }
+}
+
+fn collect_items(
+    mut commands: Commands,
+    mut player_inv_q: Query<(&Transform, &mut InventoryItems), With<Player>>,
+    dropped_items_q: Query<(Entity, &Transform, &CollectableItem), With<CollectableItem>>
+) {
+    for (player_trans, mut player_invitems) in player_inv_q.iter_mut() {
+        for (item_entity, item_trans, item_collable) in dropped_items_q.iter() {
+            if (player_trans.translation - item_trans.translation).length() <= COLL_DIST {
+                player_invitems.add_item(item_collable.item.clone());
+                commands.entity(item_entity).despawn();
+            }
+        }
     }
 }
 

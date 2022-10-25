@@ -53,7 +53,7 @@ pub fn entity_destruct(
     _game_assets: &Res<GameAssets>,
     _parent_trans: &Transform
 ) {
-    commands.entity(*entity).despawn();
+    commands.entity(*entity).despawn_recursive();
 }
 
 pub fn angle_between(a: Vec3, b: Vec3) -> f32{

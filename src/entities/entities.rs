@@ -2,6 +2,7 @@ use crate::prelude::*;
 
 const ENTITY_DIST_REPULSION: f32 = 20.0;
 const REPULSION_ACC: f32 = 200.0;
+const DROPPED_ROTSPEED: f32 = 3.14/2.0;
 
 pub struct EntitiesPlugin;
 
@@ -12,7 +13,9 @@ impl Plugin for EntitiesPlugin
         app.add_system_set(SystemSet::on_update(AppState::InGame)
         .with_system(temp_entity_handler)
         .with_system(entity_health)
-        .with_system(temp_turret_handler));
+        .with_system(temp_turret_handler)
+        .with_system(dropped_behaviour)
+        .with_system(drop_items.before(entity_health)));
     }
 }
 
@@ -60,6 +63,38 @@ impl TempEntity for TempTurretDestroyed
     }
 }
 
+fn drop_items(
+    mut commands: Commands,
+    game_assets: Res<GameAssets>,
+    query: Query<(&EntityHealth, &Transform, &DropsItem), Without<Player>>
+) {
+    for (health, trans, drop_items) in query.iter()
+    {
+        let mut cloned_trans = trans.clone();
+
+        cloned_trans.scale *= 0.5;
+
+        if health.val <= 0.0 {
+            commands
+                .spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: game_assets.texture_atlas.clone(),
+                    sprite: TextureAtlasSprite {
+                        index: drop_items.item.item_type as usize,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert_bundle(TransformBundle{
+                    local: cloned_trans,
+                    ..Default::default()
+                })
+                .insert(CollectableItem {
+                    item: drop_items.item.clone()
+                });
+        }
+    }
+}
+
 fn entity_health(
     mut commands: Commands,
     game_assets: Res<GameAssets>,
@@ -69,6 +104,15 @@ fn entity_health(
         if health.val <= 0.0 {
             (health.func_destruct)(&mut commands, &entity, &game_assets, &trans);
         }
+    }
+}
+
+fn dropped_behaviour(
+    mut query: Query<&mut Transform, With<CollectableItem>>,
+    time: Res<Time>
+) {
+    for mut dropped in query.iter_mut() {
+        dropped.rotation = Quat::from_rotation_z(DROPPED_ROTSPEED * (time.seconds_since_startup() as f32));
     }
 }
 

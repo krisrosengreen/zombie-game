@@ -78,6 +78,16 @@ impl InventoryItems
         self.get_index(item_type) != usize::MAX
     }
 
+    pub fn add_item(&mut self, item: Item) {
+        if self.has_item(item.item_type)
+        {
+            let item_index = self.get_index(item.item_type);
+            self.items[item_index].quantity += 1;
+        } else {
+            self.items.push(item);
+        }
+    }
+
     pub fn tick_or_remove(&mut self, item_type: SelectionTypes)
     {
         let index = self.get_index(item_type);
@@ -94,7 +104,19 @@ impl InventoryItems
     }
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Component)]
+pub struct CollectableItem
+{
+    pub item: Item
+}
+
+#[derive(Component)]
+pub struct DropsItem
+{
+    pub item: Item
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum SelectionTypes
 {
     WallBlock = 0,
