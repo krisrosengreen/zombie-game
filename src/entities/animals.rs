@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, utils::entity_destruct};
 
 const ANIMAL_SPEED: f32 = 40.0;
 const ANIMAL_ACC: f32 = 200.0;
@@ -99,14 +99,5 @@ pub fn spawn_animal(
             size: Vec2::new(10.0, 10.0)
         })
         .insert(Attackable(TargetPriority::High))
-        .insert(EntityHealth{val: 20.0, func_destruct: animal_destruct});
-}
-
-fn animal_destruct(
-    commands: &mut Commands,
-    entity: &Entity,
-    _game_assets: &Res<GameAssets>,
-    _parent_trans: &Transform
-) {
-    commands.entity(*entity).despawn();    
+        .insert(EntityHealth{val: 20.0, func_destruct: entity_destruct});
 }

@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, utils::entity_destruct};
 
 const NUM_TREES: u8 = 50;
 
@@ -89,17 +89,8 @@ fn spawn_tree(
         })
         .insert(StaticEntity)
         .insert(Attackable(TargetPriority::Low))
-        .insert(EntityHealth{val: 200.0, func_destruct: tree_destruct})
+        .insert(EntityHealth{val: 200.0, func_destruct: entity_destruct})
         .insert(BoxCollider {
             size: Vec2::new(20.0, 20.0)
         });
-}
-
-fn tree_destruct(
-    commands: &mut Commands,
-    entity: &Entity,
-    _game_assets: &Res<GameAssets>,
-    _parent_trans: &Transform
-) {
-    commands.entity(*entity).despawn();
 }

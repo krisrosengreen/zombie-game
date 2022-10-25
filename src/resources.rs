@@ -17,9 +17,20 @@ pub struct CollisionEvent
     pub stat_b: Entity
 }
 
+pub struct BlockSelection
+{
+    pub block: SelectionTypes
+}
+
 pub struct InventoryAsset
 {
     pub texture: Handle<TextureAtlas>
+}
+
+pub struct Item
+{
+    pub item_type: SelectionTypes,
+    pub quantity: i8
 }
 
 pub struct GunTimer(pub Timer);
@@ -29,8 +40,3 @@ pub struct ZombieTimer(pub Timer);
 pub struct ZombieTimeoutTimer(pub Timer);
 
 pub struct ZombieLevelTimer(pub Timer);
-
-pub struct BlockSelection
-{
-    pub block: SelectionTypes
-}

@@ -45,6 +45,30 @@ fn player_setup(
         .insert(BoxCollider {
             size: Vec2::new(10.0, 10.0)
         })
+        .insert(InventoryItems{
+            items: vec![
+                Item{
+                    quantity: 10,
+                    item_type: SelectionTypes::WoodFence
+                },
+                Item{
+                    quantity: 15,
+                    item_type: SelectionTypes::TurretBlock
+                },
+                Item{
+                    quantity: 15,
+                    item_type: SelectionTypes::TripMine
+                },
+                Item{
+                    quantity: 15,
+                    item_type: SelectionTypes::Fence
+                },
+                Item{
+                    quantity: 15,
+                    item_type: SelectionTypes::WindMill
+                }
+                ]
+        })
         .insert(EntityHealth{val: 100.0, func_destruct: player_destruct});
 
     // SPAWN HEALTBAR

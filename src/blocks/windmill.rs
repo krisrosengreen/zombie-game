@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, utils::entity_destruct};
 
 const ROT_SPEED: f32 = 1.5*3.14;
 pub const POWER_RADIUS: f32 = 80.0;
@@ -69,18 +69,9 @@ pub fn spawn_windmill(
         })
         .insert(EntityHealth {
             val: 200.0,
-            func_destruct: windmill_destruct
+            func_destruct: entity_destruct 
         })
         .insert(WindMill)
         .add_child(blade_entity);
 
-}
-
-fn windmill_destruct(
-    commands: &mut Commands,
-    entity: &Entity,
-    _game_assets: &Res<GameAssets>,
-    _parent_trans: &Transform
-) {
-    commands.entity(*entity).despawn_recursive();
 }

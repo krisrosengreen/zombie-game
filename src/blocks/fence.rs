@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, utils::entity_destruct};
 
 const FENCE_SPEED: f32 = 3.0;
 
@@ -32,7 +32,7 @@ pub fn spawn_fence(
             local: parent_trans.clone(),
             ..Default::default()
         })
-        .insert(EntityHealth{val: 500.0, func_destruct: fence_destruct})
+        .insert(EntityHealth{val: 500.0, func_destruct: entity_destruct})
         .insert(Fence);
 }
 
@@ -49,13 +49,3 @@ fn fence_behaviour(
         }
     }
 }
-
-fn fence_destruct(
-    commands: &mut Commands,
-    entity: &Entity,
-    _game_assets: &Res<GameAssets>,
-    _parent_trans: &Transform
-) {
-    commands.entity(*entity).despawn();
-}
-

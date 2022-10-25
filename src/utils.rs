@@ -37,6 +37,25 @@ pub fn my_cursor_system(
     
 }
 
+pub fn destruct_cleanup<T: Component>(
+    mut commands: Commands,
+    query: Query<Entity, With<T>>
+)
+{
+    for entity in query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+pub fn entity_destruct(
+    commands: &mut Commands,
+    entity: &Entity,
+    _game_assets: &Res<GameAssets>,
+    _parent_trans: &Transform
+) {
+    commands.entity(*entity).despawn();
+}
+
 pub fn angle_between(a: Vec3, b: Vec3) -> f32{
     (b.y - a.y).atan2(b.x - a.x)
 }

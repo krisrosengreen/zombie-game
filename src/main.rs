@@ -115,38 +115,38 @@ fn keyboard_actions(
         rb.vy += -PLAYER_ACC*time.delta_seconds();
     }
 
-    if input.pressed(KeyCode::Key1)
+    if input.just_pressed(KeyCode::Key1)
     {
         block.block = SelectionTypes::WallBlock;
     }
 
-    if input.pressed(KeyCode::Key2)
+    if input.just_pressed(KeyCode::Key2)
     {
         block.block = SelectionTypes::TurretBlock;
     }
 
-    if input.pressed(KeyCode::Key3) {
+    if input.just_pressed(KeyCode::Key3) {
         block.block = SelectionTypes::TripMine;
     }
 
-    if input.pressed(KeyCode::Key4) {
+    if input.just_pressed(KeyCode::Key4) {
         block.block = SelectionTypes::Fence;
     }
 
-    if input.pressed(KeyCode::Key5) {
+    if input.just_pressed(KeyCode::Key5) {
         block.block = SelectionTypes::Wheat;
     }
 
-    if input.pressed(KeyCode::Key6)
+    if input.just_pressed(KeyCode::Key6)
     {
         block.block = SelectionTypes::WindMill;
     }
 
-    if input.pressed(KeyCode::Key7) {
+    if input.just_pressed(KeyCode::Key7) {
         block.block = SelectionTypes::WoodFence;
     }
 
-    if input.pressed(KeyCode::R)
+    if input.just_pressed(KeyCode::R)
     {
         let mut magazine = magazine.single_mut();
         magazine.0 = 0;

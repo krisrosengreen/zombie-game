@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, utils::entity_destruct};
 
 const TIME_STATE_CHANGE: f32 = 45.0;
 
@@ -49,19 +49,10 @@ pub fn spawn_wheat(
         .insert(Attackable(TargetPriority::Low))
         .insert(EntityHealth {
             val: 1.0,
-            func_destruct: wheat_destruct
+            func_destruct: entity_destruct 
         })
         .insert(Wheat {
             state: 0,
             timer: Timer::from_seconds(TIME_STATE_CHANGE, true)
         });
-}
-
-fn wheat_destruct(
-    commands: &mut Commands,
-    entity: &Entity,
-    _game_assets: &Res<GameAssets>,
-    _parent_trans: &Transform
-) {
-    commands.entity(*entity).despawn();
 }

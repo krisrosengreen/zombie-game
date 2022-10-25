@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, utils::destruct_cleanup};
 
 pub struct MainMenuPlugin;
 
@@ -11,7 +11,7 @@ impl Plugin for MainMenuPlugin
         .add_system_set(SystemSet::on_update(AppState::MainMenu)
             .with_system(key_press))
         .add_system_set(SystemSet::on_exit(AppState::MainMenu)
-            .with_system(destruct_main_menu));
+            .with_system(destruct_cleanup::<UiText>));
             
         app.add_system_set(SystemSet::on_update(AppState::GameSetup)
             .with_system(setup_setupgame));
@@ -112,11 +112,4 @@ fn destruct_game(
     }
 
     state.set(AppState::MainMenu).unwrap();
-}
-
-fn destruct_main_menu(
-    mut commands: Commands,
-    mm_query: Query<Entity, With<UiText>>
-) {
-    commands.entity(mm_query.single()).despawn_recursive();
 }
