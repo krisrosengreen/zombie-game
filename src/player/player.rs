@@ -3,6 +3,8 @@ use bevy::sprite::Anchor;
 use crate::prelude::*;
 
 pub const COLL_DIST: f32 = 10.0;
+pub const MOVESPEED: f32 = 40.0;
+pub const PLAYER_ACC: f32 = 600.0;
 
 pub struct PlayerPlugin;
 

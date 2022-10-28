@@ -6,6 +6,7 @@ mod blocks;
 mod components;
 mod resources;
 mod utils;
+mod events;
 
 mod prelude {
     pub use bevy::prelude::*;
@@ -17,15 +18,13 @@ mod prelude {
     pub use crate::blocks::*;
     pub use crate::components::*;
     pub use crate::resources::*;
+    pub use crate::events::*;
     pub use crate::utils::angle_between;
     pub use crate::utils::dist_between;
     pub use crate::utils::my_cursor_system;
 }
 
-use prelude::{*, interaction::INTERACTION_DISTANCE};
-
-pub const MOVESPEED: f32 = 40.0;
-pub const PLAYER_ACC: f32 = 600.0;
+use prelude::*;
 
 fn main() {
     App::new()
@@ -33,32 +32,16 @@ fn main() {
     .add_plugins(DefaultPlugins)
     .insert_resource(MouseLoc{x: 0.0, y: 0.0})
     .insert_resource(BlockSelection{block: ItemTypes::WallBlock})
-    .add_event::<CollisionEvent>()
-    .add_event::<ChestInteractEvent>()
-    .add_event::<ChestChangeInventoryEvent>()
     .add_state(AppState::MainMenu)
-    .add_plugin(WeaponsPlugin)
     .add_plugin(PlayerPlugin)
-    .add_plugin(ZombiePlugin)
-    .add_plugin(TurretPlugin)
-    .add_plugin(WallPlugin)
-    .add_plugin(PhysicsPlugin)
-    .add_plugin(ConstructionPlugin)
-    .add_plugin(MainMenuPlugin)
-    .add_plugin(InventoryPlugin)
     .add_plugin(EntitiesPlugin)
-    .add_plugin(EnvironmentPlugin)
-    .add_plugin(TripMinePlugin)
-    .add_plugin(FencePlugin)
-    .add_plugin(WheatPlugin)
-    .add_plugin(WindMillPlugin)
-    .add_plugin(MiningRigPlugin)
-    .add_plugin(AnimalsPlugin)
-    .add_plugin(InteractionPlugin)
-    .add_plugin(ChestPlugin)
+    .add_plugin(GameUiPlugin)
+    .add_plugin(SystemsPlugin)
+    .add_plugin(BlocksPlugin)
+    .add_plugin(EventsPlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
-        .with_system(keyboard_actions)
+        .with_system(utils::keyboard_actions)
     )
     .run();
 }
@@ -92,104 +75,4 @@ fn setup(
     commands.insert_resource(InventoryAsset {
         texture: inventory_handle
     });
-}
-
-fn keyboard_actions(
-    mut query_rb: Query<(&mut Rigidbody, &Transform), With<Player>>,
-    mut block: ResMut<BlockSelection>,
-    mut magazine: Query<&mut Magazine>,
-    mut state: ResMut<State<AppState>>,
-    mut input: ResMut<Input<KeyCode>>,
-    // mouse_loc: Res<MouseLoc>,
-    interactables_query: Query<(Entity, &Transform, &InteractableEntity)>,
-    time: Res<Time>,
-
-    // Interactions
-    mut chest_writer: EventWriter<ChestInteractEvent>
-) {
-    let (mut rb, player_trans) = query_rb.single_mut();
-
-    if input.pressed(KeyCode::D) {
-        rb.vx += PLAYER_ACC*time.delta_seconds();
-    }
-
-    if input.pressed(KeyCode::A) {
-        rb.vx += -PLAYER_ACC*time.delta_seconds();
-    }
-
-    if input.pressed(KeyCode::W) {
-        rb.vy += PLAYER_ACC*time.delta_seconds();
-    }
-
-    if input.pressed(KeyCode::S) {
-        rb.vy += -PLAYER_ACC*time.delta_seconds();
-    }
-
-    if input.just_pressed(KeyCode::Key1)
-    {
-        block.block = ItemTypes::WallBlock;
-    }
-
-    if input.just_pressed(KeyCode::Key2)
-    {
-        block.block = ItemTypes::TurretBlock;
-    }
-
-    if input.just_pressed(KeyCode::Key3) {
-        block.block = ItemTypes::TripMine;
-    }
-
-    if input.just_pressed(KeyCode::Key4) {
-        block.block = ItemTypes::Fence;
-    }
-
-    if input.just_pressed(KeyCode::Key5) {
-        block.block = ItemTypes::Wheat;
-    }
-
-    if input.just_pressed(KeyCode::Key6)
-    {
-        block.block = ItemTypes::WindMill;
-    }
-
-    if input.just_pressed(KeyCode::Key7) {
-        block.block = ItemTypes::WoodFence;
-    }
-
-    if input.just_pressed(KeyCode::Key8) {
-        block.block = ItemTypes::MiningRig;
-    }
-
-    if input.just_pressed(KeyCode::Key9) {
-        block.block = ItemTypes::CraftingTable;
-    }
-
-    if input.just_pressed(KeyCode::Key0) {
-        block.block = ItemTypes::Chest;
-    }
-
-    if input.just_pressed(KeyCode::R)
-    {
-        let mut magazine = magazine.single_mut();
-        magazine.0 = 0;
-    }
-
-    if input.clear_just_pressed(KeyCode::I)
-    {
-        state.set(AppState::Inventory).unwrap();
-    }
-
-    if input.just_pressed(KeyCode::E) {
-        for (entity, trans, inter_ent) in interactables_query.iter() {
-            if (trans.translation - player_trans.translation).length() < INTERACTION_DISTANCE {
-                match inter_ent.interact_type {
-                    InteractionType::ChestOpen => chest_writer.send(ChestInteractEvent{chest_entity: entity})
-                }
-            }
-        }
-    }
-
-    rb.vx = rb.vx.clamp(-MOVESPEED, MOVESPEED);
-    rb.vy = rb.vy.clamp(-MOVESPEED, MOVESPEED);
-
 }

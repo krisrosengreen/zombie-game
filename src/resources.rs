@@ -11,12 +11,6 @@ pub struct GameAssets
     pub texture_atlas: Handle<TextureAtlas>
 }
 
-pub struct CollisionEvent
-{
-    pub ent_a: Entity,
-    pub stat_b: Entity
-}
-
 pub struct BlockSelection
 {
     pub block: ItemTypes
@@ -57,15 +51,4 @@ pub struct ZombieLevelTimer(pub Timer);
 pub enum InteractionType
 {
     ChestOpen
-}
-
-pub struct ChestInteractEvent
-{
-    pub chest_entity: Entity
-}
-
-pub struct ChestChangeInventoryEvent
-{
-    pub entity: Entity,
-    pub items: InventoryItems
 }

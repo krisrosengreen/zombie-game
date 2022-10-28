@@ -1,3 +1,12 @@
+use bevy::prelude::*;
+
 pub mod main_menu;
 
-pub use main_menu::MainMenuPlugin;
+pub struct GameUiPlugin;
+
+impl Plugin for GameUiPlugin
+{
+    fn build(&self, app: &mut App) {
+        app.add_plugin(main_menu::MainMenuPlugin);
+    }
+}
