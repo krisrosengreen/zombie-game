@@ -64,7 +64,7 @@ pub struct InventoryItems
 
 impl InventoryItems
 {
-    pub fn get_index(&self, item_type: SelectionTypes) -> usize
+    pub fn get_index(&self, item_type: ItemTypes) -> usize
     {
         return self
         .items
@@ -73,7 +73,7 @@ impl InventoryItems
         .unwrap_or_else(|| usize::MAX);
     }
 
-    pub fn has_item(&self, item_type: SelectionTypes) -> bool
+    pub fn has_item(&self, item_type: ItemTypes) -> bool
     {
         self.get_index(item_type) != usize::MAX
     }
@@ -88,7 +88,7 @@ impl InventoryItems
         }
     }
 
-    pub fn tick_or_remove(&mut self, item_type: SelectionTypes)
+    pub fn tick_or_remove(&mut self, item_type: ItemTypes)
     {
         let index = self.get_index(item_type);
 
@@ -117,7 +117,8 @@ pub struct DropsItem
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub enum SelectionTypes
+#[allow(dead_code)]
+pub enum ItemTypes
 {
     WallBlock = 0,
     TurretBlock = 5,
@@ -125,21 +126,41 @@ pub enum SelectionTypes
     Fence = 14,
     Wheat = 17,
     WindMill = 15,
-    WoodFence = 20
+    WoodFence = 20,
+
+    // From here on forward, items have not been added.
+    Chest = 25,
+    LandingPad = 26,
+    MiningRig = 27,
+    IronIngot = 28,
+    Coal = 29,
+    CraftingTable = 30,
+    Steak = 31
+}
+
+#[allow(dead_code)]
+impl ItemTypes {
+    pub fn sprite_index(&self) -> usize {
+        (*self) as usize
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[allow(dead_code)]
 pub enum AppState {
     MainMenu,
     GameSetup,
     InGame,
     Inventory,
     GameDestruct,
-    _Paused,
+    Paused,
 }
 
 #[derive(Component)]
 pub struct InventoryItem;
+
+#[derive(Component)]
+pub struct MiningRig(pub Timer);
 
 #[derive(Component)]
 pub struct UiText;
@@ -191,9 +212,6 @@ pub struct WindMill;
 
 #[derive(Component)]
 pub struct WindMillBlade;
-
-#[derive(Clone)]
-pub struct WindMillPlugin;
 
 #[derive(Clone)]
 pub struct WheatPlugin;

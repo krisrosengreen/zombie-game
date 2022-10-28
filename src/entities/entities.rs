@@ -75,24 +75,36 @@ fn drop_items(
         cloned_trans.scale *= 0.5;
 
         if health.val <= 0.0 {
-            commands
-                .spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: game_assets.texture_atlas.clone(),
-                    sprite: TextureAtlasSprite {
-                        index: drop_items.item.item_type as usize,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .insert_bundle(TransformBundle{
-                    local: cloned_trans,
-                    ..Default::default()
-                })
-                .insert(CollectableItem {
-                    item: drop_items.item.clone()
-                });
+            spawn_dropped(&mut commands,
+                &game_assets,
+                &cloned_trans,
+                drop_items.item.clone());
         }
     }
+}
+
+pub fn spawn_dropped(
+    commands: &mut Commands,
+    game_assets: &Res<GameAssets>,
+    spawn_trans: &Transform,
+    item: Item
+) {
+    commands
+        .spawn_bundle(SpriteSheetBundle {
+            texture_atlas: game_assets.texture_atlas.clone(),
+            sprite: TextureAtlasSprite {
+                index: item.item_type.sprite_index(),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert_bundle(TransformBundle{
+            local: spawn_trans.clone(),
+            ..Default::default()
+        })
+        .insert(CollectableItem {
+            item: item.clone()
+        });
 }
 
 fn entity_health(

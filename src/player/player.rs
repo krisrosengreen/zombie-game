@@ -2,9 +2,9 @@ use bevy::sprite::Anchor;
 
 use crate::prelude::*;
 
-pub struct PlayerPlugin;
-
 pub const COLL_DIST: f32 = 10.0;
+
+pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin
 {
@@ -51,28 +51,32 @@ fn player_setup(
         .insert(InventoryItems{
             items: vec![
                 Item{
-                    quantity: 10,
-                    item_type: SelectionTypes::WoodFence
+                    quantity: 30,
+                    item_type: ItemTypes::WoodFence
                 },
                 Item{
-                    quantity: 15,
-                    item_type: SelectionTypes::TurretBlock
+                    quantity: 30,
+                    item_type: ItemTypes::TurretBlock
                 },
                 Item{
-                    quantity: 15,
-                    item_type: SelectionTypes::TripMine
+                    quantity: 30,
+                    item_type: ItemTypes::TripMine
                 },
                 Item{
-                    quantity: 15,
-                    item_type: SelectionTypes::Fence
+                    quantity: 30,
+                    item_type: ItemTypes::Fence
                 },
                 Item{
-                    quantity: 15,
-                    item_type: SelectionTypes::WindMill
+                    quantity: 30,
+                    item_type: ItemTypes::WindMill
                 },
                 Item{
-                    quantity: 15,
-                    item_type: SelectionTypes::Wheat
+                    quantity: 30,
+                    item_type: ItemTypes::Wheat
+                },
+                Item{
+                    quantity: 2,
+                    item_type: ItemTypes::MiningRig
                 }
                 ]
         })

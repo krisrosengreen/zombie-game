@@ -98,6 +98,12 @@ pub fn spawn_animal(
         .insert(BoxCollider {
             size: Vec2::new(10.0, 10.0)
         })
+        .insert(DropsItem {
+            item: Item {
+                item_type: ItemTypes::Steak,
+                quantity: 2
+            }
+        })
         .insert(Attackable(TargetPriority::High))
         .insert(EntityHealth{val: 20.0, func_destruct: entity_destruct});
 }

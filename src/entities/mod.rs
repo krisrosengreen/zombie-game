@@ -12,3 +12,4 @@ pub use entities::{
 };
 
 pub use zombie::is_hindered;
+pub use entities::spawn_dropped;

@@ -6,6 +6,7 @@ pub mod wheat;
 pub mod windmill;
 pub mod woodfence;
 pub mod wall;
+pub mod miningrig;
 
 pub use construct::ConstructionPlugin;
 pub use fence::FencePlugin;
@@ -15,3 +16,4 @@ pub use wheat::WheatPlugin;
 pub use windmill::WindMillPlugin;
 pub use woodfence::WoodFencePlugin;
 pub use wall::WallPlugin;
+pub use miningrig::MiningRigPlugin;

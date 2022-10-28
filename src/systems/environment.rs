@@ -90,7 +90,7 @@ fn spawn_tree(
         .insert(EntityHealth{val: 200.0, func_destruct: entity_destruct})
         .insert(DropsItem{
             item: Item {
-                item_type: SelectionTypes::WallBlock,
+                item_type: ItemTypes::WallBlock,
                 quantity: 3
             }
         })

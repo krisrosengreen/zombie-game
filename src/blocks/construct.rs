@@ -48,15 +48,18 @@ fn build(
             let y_pos = mouseloc.y + y_diff;
 
             let spawn_pos = Vec3::new(x_pos, y_pos, 3.0);
+            let spawn_trans = Transform::from_translation(spawn_pos);
 
             match block.block {
-                SelectionTypes::WallBlock => wall::spawn_wall(&mut commands, spawn_pos, &game_assets),
-                SelectionTypes::TurretBlock => turret::spawn_turret(&mut commands, spawn_pos, &game_assets),
-                SelectionTypes::TripMine => tripmine::spawn_tripmine(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
-                SelectionTypes::Fence => fence::spawn_fence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
-                SelectionTypes::Wheat => wheat::spawn_wheat(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
-                SelectionTypes::WindMill => windmill::spawn_windmill(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
-                SelectionTypes::WoodFence => woodfence::spawn_woodfence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
+                ItemTypes::WallBlock => wall::spawn_wall(&mut commands, spawn_pos, &game_assets),
+                ItemTypes::TurretBlock => turret::spawn_turret(&mut commands, spawn_pos, &game_assets),
+                ItemTypes::TripMine => tripmine::spawn_tripmine(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
+                ItemTypes::Fence => fence::spawn_fence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
+                ItemTypes::Wheat => wheat::spawn_wheat(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
+                ItemTypes::WindMill => windmill::spawn_windmill(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
+                ItemTypes::WoodFence => woodfence::spawn_woodfence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
+                ItemTypes::MiningRig => miningrig::spawn_miningrig(&mut commands, spawn_pos, &game_assets),
+                _ => println!("Could not match selection type!")
             }
 
             player_inv.tick_or_remove(block.block.clone());

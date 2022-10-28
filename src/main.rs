@@ -32,7 +32,7 @@ fn main() {
     .add_startup_system(setup)
     .add_plugins(DefaultPlugins)
     .insert_resource(MouseLoc{x: 0.0, y: 0.0})
-    .insert_resource(BlockSelection{block: SelectionTypes::WallBlock})
+    .insert_resource(BlockSelection{block: ItemTypes::WallBlock})
     .add_event::<CollisionEvent>()
     .add_state(AppState::MainMenu)
     .add_plugin(WeaponsPlugin)
@@ -50,6 +50,7 @@ fn main() {
     .add_plugin(FencePlugin)
     .add_plugin(WheatPlugin)
     .add_plugin(WindMillPlugin)
+    .add_plugin(MiningRigPlugin)
     .add_plugin(AnimalsPlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
@@ -69,7 +70,7 @@ fn setup(
     // Get the texture sheet
     let texture_handle = asset_server.load("Sheet.png");
     let texture_atlas = TextureAtlas::from_grid(texture_handle,
-    Vec2::new(20.0,20.0), 4, 6);
+    Vec2::new(20.0,20.0), 4, 8);
 
     let texture_atlas_handle = (texture_atlases).add(texture_atlas);
     
@@ -117,33 +118,37 @@ fn keyboard_actions(
 
     if input.just_pressed(KeyCode::Key1)
     {
-        block.block = SelectionTypes::WallBlock;
+        block.block = ItemTypes::WallBlock;
     }
 
     if input.just_pressed(KeyCode::Key2)
     {
-        block.block = SelectionTypes::TurretBlock;
+        block.block = ItemTypes::TurretBlock;
     }
 
     if input.just_pressed(KeyCode::Key3) {
-        block.block = SelectionTypes::TripMine;
+        block.block = ItemTypes::TripMine;
     }
 
     if input.just_pressed(KeyCode::Key4) {
-        block.block = SelectionTypes::Fence;
+        block.block = ItemTypes::Fence;
     }
 
     if input.just_pressed(KeyCode::Key5) {
-        block.block = SelectionTypes::Wheat;
+        block.block = ItemTypes::Wheat;
     }
 
     if input.just_pressed(KeyCode::Key6)
     {
-        block.block = SelectionTypes::WindMill;
+        block.block = ItemTypes::WindMill;
     }
 
     if input.just_pressed(KeyCode::Key7) {
-        block.block = SelectionTypes::WoodFence;
+        block.block = ItemTypes::WoodFence;
+    }
+
+    if input.just_pressed(KeyCode::Key8) {
+        block.block = ItemTypes::MiningRig;
     }
 
     if input.just_pressed(KeyCode::R)

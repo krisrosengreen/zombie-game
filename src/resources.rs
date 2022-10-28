@@ -19,7 +19,7 @@ pub struct CollisionEvent
 
 pub struct BlockSelection
 {
-    pub block: SelectionTypes
+    pub block: ItemTypes
 }
 
 pub struct InventoryAsset
@@ -30,7 +30,7 @@ pub struct InventoryAsset
 #[derive(Clone)]
 pub struct Item
 {
-    pub item_type: SelectionTypes,
+    pub item_type: ItemTypes,
     pub quantity: i8
 }
 
