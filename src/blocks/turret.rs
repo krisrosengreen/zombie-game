@@ -8,7 +8,7 @@ impl Plugin for TurretPlugin
 {
     fn build(&self, app: &mut App) {
         app
-        .add_system_set(SystemSet::on_enter(AppState::InGame)
+        .add_system_set(SystemSet::on_enter(AppState::GameSetup)
             .with_system(turret_setup))
         .add_system_set(SystemSet::on_update(AppState::InGame)
             .with_system(turret_targeting));
@@ -59,7 +59,7 @@ pub fn turret_targeting(
 ) {
     let static_vec: Vec<&Transform> = static_query.iter().collect();
 
-    for (turret, mut t_shoot, mut t_cool, mut t_bullet) in turret_query.iter_mut() {
+    'outer: for (turret, mut t_shoot, mut t_cool, mut t_bullet) in turret_query.iter_mut() {
         for power_trans in power_query.iter() {
             if (turret.translation - power_trans.translation).length() < POWER_RADIUS {
                 let mut target_shoot: Vec3 = Vec3::ZERO;
@@ -99,6 +99,8 @@ pub fn turret_targeting(
                         }
                     }
                 }
+
+                continue 'outer;
             }
         }
     }
@@ -131,7 +133,7 @@ fn spawn_destroyed(
             .spawn_bundle(SpriteSheetBundle {
                 texture_atlas: game_assets.texture_atlas.clone(),
                 sprite: TextureAtlasSprite {
-                    index: 11,
+                    index: ItemTypes::TurretBlock.sprite_index(),
                     ..Default::default()
                 },
                 ..Default::default()

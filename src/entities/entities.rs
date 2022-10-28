@@ -12,9 +12,9 @@ impl Plugin for EntitiesPlugin
     {
         app.add_system_set(SystemSet::on_update(AppState::InGame)
         .with_system(temp_entity_handler)
-        .with_system(entity_health)
         .with_system(temp_turret_handler)
         .with_system(dropped_behaviour)
+        .with_system(entity_health.after(drop_items))
         .with_system(drop_items.before(entity_health)));
     }
 }

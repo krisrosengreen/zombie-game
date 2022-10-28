@@ -7,6 +7,8 @@ pub mod windmill;
 pub mod woodfence;
 pub mod wall;
 pub mod miningrig;
+pub mod craftingtable;
+pub mod chest;
 
 pub use construct::ConstructionPlugin;
 pub use fence::FencePlugin;
@@ -17,3 +19,5 @@ pub use windmill::WindMillPlugin;
 pub use woodfence::WoodFencePlugin;
 pub use wall::WallPlugin;
 pub use miningrig::MiningRigPlugin;
+pub use craftingtable::CraftingTablePlugin;
+pub use chest::ChestPlugin;

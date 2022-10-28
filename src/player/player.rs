@@ -77,6 +77,14 @@ fn player_setup(
                 Item{
                     quantity: 2,
                     item_type: ItemTypes::MiningRig
+                },
+                Item{
+                    quantity: 2,
+                    item_type: ItemTypes::CraftingTable
+                },
+                Item{
+                    quantity: 2,
+                    item_type: ItemTypes::Chest
                 }
                 ]
         })

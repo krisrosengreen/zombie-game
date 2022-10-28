@@ -56,7 +56,7 @@ pub struct TurretTargeting
     pub shoot: bool
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct InventoryItems
 {
     pub items: Vec<Item>
@@ -104,6 +104,15 @@ impl InventoryItems
     }
 }
 
+impl Default for InventoryItems
+{
+    fn default() -> Self {
+        Self {
+            items: Vec::<Item>::new()
+        }
+    }
+}
+
 #[derive(Component)]
 pub struct CollectableItem
 {
@@ -145,15 +154,10 @@ impl ItemTypes {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-#[allow(dead_code)]
-pub enum AppState {
-    MainMenu,
-    GameSetup,
-    InGame,
-    Inventory,
-    GameDestruct,
-    Paused,
+#[derive(Component)]
+pub struct InteractableEntity
+{
+    pub interact_type: InteractionType
 }
 
 #[derive(Component)]
@@ -173,6 +177,9 @@ pub struct Tree;
 
 #[derive(Component)]
 pub struct Player;
+
+#[derive(Component)]
+pub struct Chest;
 
 #[derive(Component)]
 pub struct HealthBar;
@@ -248,3 +255,6 @@ pub struct MainCamera;
 
 #[derive(Component)]
 pub struct TextScoreboard;
+
+#[derive(Component)]
+pub struct ExternalInventory;

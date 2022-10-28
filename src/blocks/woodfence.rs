@@ -18,7 +18,7 @@ pub fn spawn_woodfence(
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: game_asset.texture_atlas.clone(),
             sprite: TextureAtlasSprite {
-                index: 20,
+                index: ItemTypes::WoodFence.sprite_index(),
                 custom_size: Some(Vec2 { x: 20.0, y: 20.0 }),
                 ..Default::default()
             },

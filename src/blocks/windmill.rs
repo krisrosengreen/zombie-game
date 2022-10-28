@@ -34,7 +34,7 @@ pub fn spawn_windmill(
     .spawn_bundle(SpriteSheetBundle {
         texture_atlas: game_assets.texture_atlas.clone(),
         sprite: TextureAtlasSprite {
-            index: 16,
+            index: ItemTypes::WindMill.sprite_index() + 1,
             custom_size: Some(Vec2 { x: 20.0, y: 20.0 }),
             ..Default::default()
         },
@@ -52,7 +52,7 @@ pub fn spawn_windmill(
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: game_assets.texture_atlas.clone(),
             sprite: TextureAtlasSprite {
-                index: 15,
+                index: ItemTypes::WindMill.sprite_index(),
                 custom_size: Some(Vec2 { x: 20.0, y: 20.0 }),
                 ..Default::default()
             },

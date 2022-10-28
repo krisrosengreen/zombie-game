@@ -53,12 +53,14 @@ fn build(
             match block.block {
                 ItemTypes::WallBlock => wall::spawn_wall(&mut commands, spawn_pos, &game_assets),
                 ItemTypes::TurretBlock => turret::spawn_turret(&mut commands, spawn_pos, &game_assets),
-                ItemTypes::TripMine => tripmine::spawn_tripmine(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
-                ItemTypes::Fence => fence::spawn_fence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
-                ItemTypes::Wheat => wheat::spawn_wheat(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
-                ItemTypes::WindMill => windmill::spawn_windmill(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
-                ItemTypes::WoodFence => woodfence::spawn_woodfence(&mut commands, &game_assets, &Transform::from_translation(spawn_pos)),
+                ItemTypes::TripMine => tripmine::spawn_tripmine(&mut commands, &game_assets, &spawn_trans),
+                ItemTypes::Fence => fence::spawn_fence(&mut commands, &game_assets, &spawn_trans),
+                ItemTypes::Wheat => wheat::spawn_wheat(&mut commands, &game_assets, &spawn_trans),
+                ItemTypes::WindMill => windmill::spawn_windmill(&mut commands, &game_assets, &spawn_trans),
+                ItemTypes::WoodFence => woodfence::spawn_woodfence(&mut commands, &game_assets, &spawn_trans),
                 ItemTypes::MiningRig => miningrig::spawn_miningrig(&mut commands, spawn_pos, &game_assets),
+                ItemTypes::CraftingTable => craftingtable::spawn_craftingtable(&mut commands, &game_assets, &spawn_trans),
+                ItemTypes::Chest => chest::spawn_chest(&mut commands, &game_assets, &spawn_trans, InventoryItems { ..Default::default() }),
                 _ => println!("Could not match selection type!")
             }
 

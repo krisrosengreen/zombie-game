@@ -91,7 +91,7 @@ fn spawn_tree(
         .insert(DropsItem{
             item: Item {
                 item_type: ItemTypes::WallBlock,
-                quantity: 3
+                quantity: 6
             }
         })
         .insert(BoxCollider {

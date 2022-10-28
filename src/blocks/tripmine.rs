@@ -43,7 +43,7 @@ pub fn spawn_tripmine(
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: game_assets.texture_atlas.clone(),
             sprite: TextureAtlasSprite {
-                index: 12,
+                index: ItemTypes::TripMine.sprite_index(),
                 custom_size: Some(Vec2 { x: 20.0, y: 20.0 }),
                 ..Default::default()
             },

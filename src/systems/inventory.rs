@@ -8,26 +8,69 @@ impl Plugin for InventoryPlugin
 {
     fn build(&self, app: &mut App)
     {
+        // Player inventory only
         app.add_system_set(SystemSet::on_enter(AppState::Inventory)
-            .with_system(inventory_init));
+            .with_system(player_inventory_init));
 
         app.add_system_set(SystemSet::on_update(AppState::Inventory)
             .with_system(inventory_handler));
 
         app.add_system_set(SystemSet::on_exit(AppState::Inventory)
             .with_system(destruct_cleanup::<Inventory>));
+
+        // External inventory
+        app.add_system_set(SystemSet::on_enter(AppState::ExternalInventory)
+            .with_system(external_inventory_init));
+
+        app.add_system_set(SystemSet::on_update(AppState::ExternalInventory)
+            .with_system(inventory_handler));
+
+        app.add_system_set(SystemSet::on_exit(AppState::ExternalInventory)
+            .with_system(destruct_cleanup::<Inventory>)
+            .with_system(destruct_cleanup::<ExternalInventory>));
     }
 }
 
-pub fn inventory_init(
+pub fn player_inventory_init(
     mut commands: Commands,
     inv_items_query: Query<&InventoryItems, With<Player>>,
     game_assets: Res<GameAssets>,
     inv_texture: Res<InventoryAsset>
 ) {
     // Spawn all inventory items
-    let inv_items = inv_items_query.single();
+    inventory_spawn(&mut commands, &inv_items_query.single(), &game_assets, &inv_texture, Vec3::new(0.0, 0.0, 30.0));
+}
 
+pub fn external_inventory_init(
+    mut commands: Commands,
+    player_inv_items_query: Query<&InventoryItems, With<Player>>,
+    external_inv_items_query: Query<&InventoryItems, With<ExternalInventory>>,
+    game_assets: Res<GameAssets>,
+    inv_texture: Res<InventoryAsset>
+) {
+    // Spawn all inventory items
+    inventory_spawn(&mut commands,
+        &player_inv_items_query.single(),
+        &game_assets,
+        &inv_texture,
+        Vec3::new(0.0, 55.0, 30.0));
+    
+    // Spawn all external inventory items
+    inventory_spawn(&mut commands,
+        &external_inv_items_query.single(),
+        &game_assets,
+        &inv_texture,
+        Vec3::new(0.0, -55.0, 30.0));
+}
+
+pub fn inventory_spawn(
+    commands: &mut Commands,
+    inv_items: &InventoryItems,
+    game_assets: &Res<GameAssets>,
+    inv_texture: &Res<InventoryAsset>,
+    spawn_pos: Vec3
+) {
+    // Spawn all inventory items
     commands
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: inv_texture.texture.clone(),
@@ -39,7 +82,7 @@ pub fn inventory_init(
             ..Default::default()
         })
         .insert_bundle(TransformBundle{
-            local: Transform::from_xyz(0.0, 0.0, 30.0),
+            local: Transform::from_translation(spawn_pos),
             ..Default::default()
         })
         .insert(Inventory)

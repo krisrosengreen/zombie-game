@@ -34,6 +34,18 @@ pub struct Item
     pub quantity: i8
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[allow(dead_code)]
+pub enum AppState {
+    MainMenu,
+    GameSetup,
+    InGame,
+    Inventory,
+    ExternalInventory,
+    GameDestruct,
+    Paused,
+}
+
 pub struct GunTimer(pub Timer);
 
 pub struct ZombieTimer(pub Timer);
@@ -41,3 +53,19 @@ pub struct ZombieTimer(pub Timer);
 pub struct ZombieTimeoutTimer(pub Timer);
 
 pub struct ZombieLevelTimer(pub Timer);
+
+pub enum InteractionType
+{
+    ChestOpen
+}
+
+pub struct ChestInteractEvent
+{
+    pub chest_entity: Entity
+}
+
+pub struct ChestChangeInventoryEvent
+{
+    pub entity: Entity,
+    pub items: InventoryItems
+}

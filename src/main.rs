@@ -22,7 +22,7 @@ mod prelude {
     pub use crate::utils::my_cursor_system;
 }
 
-use prelude::*;
+use prelude::{*, interaction::INTERACTION_DISTANCE};
 
 pub const MOVESPEED: f32 = 40.0;
 pub const PLAYER_ACC: f32 = 600.0;
@@ -34,6 +34,8 @@ fn main() {
     .insert_resource(MouseLoc{x: 0.0, y: 0.0})
     .insert_resource(BlockSelection{block: ItemTypes::WallBlock})
     .add_event::<CollisionEvent>()
+    .add_event::<ChestInteractEvent>()
+    .add_event::<ChestChangeInventoryEvent>()
     .add_state(AppState::MainMenu)
     .add_plugin(WeaponsPlugin)
     .add_plugin(PlayerPlugin)
@@ -52,6 +54,8 @@ fn main() {
     .add_plugin(WindMillPlugin)
     .add_plugin(MiningRigPlugin)
     .add_plugin(AnimalsPlugin)
+    .add_plugin(InteractionPlugin)
+    .add_plugin(ChestPlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
         .with_system(my_cursor_system)
         .with_system(keyboard_actions)
@@ -91,14 +95,19 @@ fn setup(
 }
 
 fn keyboard_actions(
-    mut query_rb: Query<&mut Rigidbody, With<Player>>,
+    mut query_rb: Query<(&mut Rigidbody, &Transform), With<Player>>,
     mut block: ResMut<BlockSelection>,
     mut magazine: Query<&mut Magazine>,
     mut state: ResMut<State<AppState>>,
     mut input: ResMut<Input<KeyCode>>,
-    time: Res<Time>
+    // mouse_loc: Res<MouseLoc>,
+    interactables_query: Query<(Entity, &Transform, &InteractableEntity)>,
+    time: Res<Time>,
+
+    // Interactions
+    mut chest_writer: EventWriter<ChestInteractEvent>
 ) {
-    let mut rb = query_rb.single_mut();
+    let (mut rb, player_trans) = query_rb.single_mut();
 
     if input.pressed(KeyCode::D) {
         rb.vx += PLAYER_ACC*time.delta_seconds();
@@ -151,6 +160,14 @@ fn keyboard_actions(
         block.block = ItemTypes::MiningRig;
     }
 
+    if input.just_pressed(KeyCode::Key9) {
+        block.block = ItemTypes::CraftingTable;
+    }
+
+    if input.just_pressed(KeyCode::Key0) {
+        block.block = ItemTypes::Chest;
+    }
+
     if input.just_pressed(KeyCode::R)
     {
         let mut magazine = magazine.single_mut();
@@ -160,6 +177,16 @@ fn keyboard_actions(
     if input.clear_just_pressed(KeyCode::I)
     {
         state.set(AppState::Inventory).unwrap();
+    }
+
+    if input.just_pressed(KeyCode::E) {
+        for (entity, trans, inter_ent) in interactables_query.iter() {
+            if (trans.translation - player_trans.translation).length() < INTERACTION_DISTANCE {
+                match inter_ent.interact_type {
+                    InteractionType::ChestOpen => chest_writer.send(ChestInteractEvent{chest_entity: entity})
+                }
+            }
+        }
     }
 
     rb.vx = rb.vx.clamp(-MOVESPEED, MOVESPEED);
