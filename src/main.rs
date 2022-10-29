@@ -29,6 +29,7 @@ use prelude::*;
 fn main() {
     App::new()
     .add_startup_system(setup)
+    .add_system(my_cursor_system)
     .add_plugins(DefaultPlugins)
     .insert_resource(MouseLoc{x: 0.0, y: 0.0})
     .insert_resource(BlockSelection{block: ItemTypes::WallBlock})
@@ -40,7 +41,6 @@ fn main() {
     .add_plugin(BlocksPlugin)
     .add_plugin(EventsPlugin)
     .add_system_set(SystemSet::on_update(AppState::InGame) 
-        .with_system(my_cursor_system)
         .with_system(utils::keyboard_actions)
     )
     .run();

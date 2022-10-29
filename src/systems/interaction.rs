@@ -21,11 +21,11 @@ fn chest_open(
         let res = chest_entities.iter().find(|p| p.0 == cevent.chest_entity);
 
         if res.is_some() {
-            let inv_items = res.unwrap().1;
+            let (entity_origin, inv_items) = res.unwrap();
 
             commands
             .spawn()
-            .insert(ExternalInventory)
+            .insert(ExternalInventory {entity_origin: entity_origin})
             .insert(inv_items.clone());
 
             state.set(AppState::ExternalInventory).unwrap();

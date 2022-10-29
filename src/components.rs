@@ -88,6 +88,21 @@ impl InventoryItems
         }
     }
 
+    pub fn remove_item(&mut self, item: Item)
+    {
+        assert!(self.has_item(item.item_type));
+
+        let invitem_index = self.get_index(item.item_type);
+
+        assert!(self.items[invitem_index].quantity >= item.quantity);
+
+        if self.items[invitem_index].quantity == item.quantity {
+            self.items.remove(invitem_index);
+        } else {
+            self.items[invitem_index].quantity -= item.quantity
+        }
+    }
+
     pub fn tick_or_remove(&mut self, item_type: ItemTypes)
     {
         let index = self.get_index(item_type);
@@ -161,7 +176,16 @@ pub struct InteractableEntity
 }
 
 #[derive(Component)]
-pub struct InventoryItem;
+pub struct InventoryItem
+{
+    pub item: Item
+}
+
+#[derive(Component)]
+pub struct ExternalInventory
+{
+    pub entity_origin: Entity
+}
 
 #[derive(Component)]
 pub struct MiningRig(pub Timer);
@@ -255,6 +279,3 @@ pub struct MainCamera;
 
 #[derive(Component)]
 pub struct TextScoreboard;
-
-#[derive(Component)]
-pub struct ExternalInventory;

@@ -6,6 +6,13 @@ pub struct MouseLoc
     pub y: f32
 }
 
+impl MouseLoc
+{
+    pub fn get_vec3(&self) -> Vec3 {
+        Vec3::new(self.x, self.y, 0.0)
+    }
+}
+
 pub struct GameAssets
 {
     pub texture_atlas: Handle<TextureAtlas>
